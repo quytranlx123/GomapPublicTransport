@@ -187,3 +187,7 @@ INSERT INTO Schedule (departure_time, arrival_time, vehicle_id) VALUES
 ('06:45', '08:15', 4),
 ('07:00', '07:30', 5);
 
+-- Thêm cột 'title' vào bảng 'Traffic_Report'
+ALTER TABLE Traffic_Report
+ADD COLUMN title VARCHAR(255) NOT NULL;
+
