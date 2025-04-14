@@ -10,6 +10,9 @@ import com.quinhat.pojo.User;
 import com.quinhat.repositories.UserRepository;
 import com.quinhat.services.UserService;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
         Set<GrantedAuthority> authorities = new HashSet<>();
         authorities.add(new SimpleGrantedAuthority(u.getUserRole()));
-        
+
         return new org.springframework.security.core.userdetails.User(
                 u.getUsername(), u.getPassword(), authorities);
     }
@@ -61,23 +64,109 @@ public class UserServiceImpl implements UserService {
     @Override
     public User addUser(Map<String, String> params, MultipartFile avatar) {
         User u = new User();
-        u.setFullName(params.get("fullname"));
-   
+
+        u.setUsername(params.get("username"));
+        u.setFullName(params.get("fullName"));
         u.setEmail(params.get("email"));
         u.setPhone(params.get("phone"));
-        u.setUsername(params.get("username"));
+
+        // Chuyển đổi birthday từ String sang Date
+        String birthdayStr = params.get("birthday");
+        if (birthdayStr != null && !birthdayStr.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthday = sdf.parse(birthdayStr);
+                u.setBirthday(birthday);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        u.setCreatedAt(new Date());
+        u.setIsActive(true);
         u.setPassword(this.passwordEncoder.encode(params.get("password")));
-        u.setUserRole("ROLE_USER");
-        
-        if (!avatar.isEmpty()) {
+        u.setUserRole(params.get("userRole")); // ✅ sửa lỗi hardcoded "userRole"
+
+        u.setGender(params.get("gender")); // Nếu User có field gender
+
+        // Upload ảnh đại diện nếu có
+        if (avatar != null && !avatar.isEmpty()) {
             try {
                 Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
                 u.setAvatar(res.get("secure_url").toString());
             } catch (IOException ex) {
-//                Logger.getLogger(ProductServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
             }
         }
-        
+
         return this.userRepo.addUser(u);
     }
+
+    @Override
+    public boolean authenticate(String username, String password) {
+        return this.userRepo.authenticate(username, password);
+    }
+
+    // Cập nhật user
+    @Override
+    public User updateUser(String username, Map<String, String> params, MultipartFile avatar) {
+        User u = this.getUserByUsername(username);
+
+        if (u == null) {
+            return null;
+        }
+
+        // Only update the fields if they are provided in the params
+        if (params.containsKey("fullName")) {
+            u.setFullName(params.get("fullName"));
+        }
+        if (params.containsKey("email")) {
+            u.setEmail(params.get("email"));
+        }
+        if (params.containsKey("phone")) {
+            u.setPhone(params.get("phone"));
+        }
+        if (params.containsKey("gender")) {
+            u.setGender(params.get("gender"));
+        }
+
+        // Update birthday if provided
+        if (params.containsKey("birthday") && !params.get("birthday").isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date birthday = sdf.parse(params.get("birthday"));
+                u.setBirthday(birthday);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Upload avatar if provided
+        if (avatar != null && !avatar.isEmpty()) {
+            try {
+                Map res = cloudinary.uploader().upload(avatar.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                u.setAvatar(res.get("secure_url").toString());
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        // Save the updated user
+        return this.userRepo.updateUser(u);
+    }
+
+    //Thay đổi mật khẩu
+    @Override
+    public boolean changePassword(String username, String oldPassword, String newPassword) {
+        User u = this.getUserByUsername(username);
+
+        if (u != null && passwordEncoder.matches(oldPassword, u.getPassword())) {
+            u.setPassword(passwordEncoder.encode(newPassword));
+            this.userRepo.updateUser(u);
+            return true;
+        }
+
+        return false;
+    }
+
 }

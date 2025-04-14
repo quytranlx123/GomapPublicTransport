@@ -1,14 +1,34 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.quinhat.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-
+import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Set;
 
+/**
+ *
+ * @author ASUS
+ */
 @Entity
-@Table(name = "User")
+@Table(name = "user")
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
     @NamedQuery(name = "User.findById", query = "SELECT u FROM User u WHERE u.id = :id"),
@@ -16,49 +36,76 @@ import java.time.LocalDateTime;
     @NamedQuery(name = "User.findByEmail", query = "SELECT u FROM User u WHERE u.email = :email"),
     @NamedQuery(name = "User.findByPhone", query = "SELECT u FROM User u WHERE u.phone = :phone"),
     @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u WHERE u.username = :username"),
+    @NamedQuery(name = "User.findByPassword", query = "SELECT u FROM User u WHERE u.password = :password"),
+    @NamedQuery(name = "User.findByBirthday", query = "SELECT u FROM User u WHERE u.birthday = :birthday"),
+    @NamedQuery(name = "User.findByAvatar", query = "SELECT u FROM User u WHERE u.avatar = :avatar"),
     @NamedQuery(name = "User.findByUserRole", query = "SELECT u FROM User u WHERE u.userRole = :userRole"),
-    @NamedQuery(name = "User.findByIsActive", query = "SELECT u FROM User u WHERE u.isActive = :isActive")
-})
+    @NamedQuery(name = "User.findByCreatedAt", query = "SELECT u FROM User u WHERE u.createdAt = :createdAt"),
+    @NamedQuery(name = "User.findByGender", query = "SELECT u FROM User u WHERE u.gender = :gender"),
+    @NamedQuery(name = "User.findByIsActive", query = "SELECT u FROM User u WHERE u.isActive = :isActive")})
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "id")
     private Integer id;
-
-    @Column(name = "full_name", nullable = false)
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 255)
+    @Column(name = "full_name")
     private String fullName;
-
-    @Column(nullable = false, unique = true)
+    // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 255)
+    @Column(name = "email")
     private String email;
-
-    @Column(nullable = false)
+    // @Pattern(regexp="^\\(?(\\d{3})\\)?[- ]?(\\d{3})[- ]?(\\d{4})$", message="Invalid phone/fax format, should be as xxx-xxx-xxxx")//if the field contains phone or fax number consider using this annotation to enforce field validation
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 20)
+    @Column(name = "phone")
     private String phone;
-
-    @Column(nullable = false, unique = true)
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 100)
+    @Column(name = "username")
     private String username;
-
-    @JsonIgnore
-    @Column(nullable = false)
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 255)
+    @Column(name = "password")
     private String password;
-
-    private LocalDate birthday;
-
+    @Column(name = "birthday")
+    @Temporal(TemporalType.DATE)
+    private Date birthday;
+    @Size(max = 255)
+    @Column(name = "avatar")
     private String avatar;
-
-    @Column(name = "user_role", nullable = false)
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 5)
+    @Column(name = "user_role")
     private String userRole;
-
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+    @Size(max = 6)
+    @Column(name = "gender")
     private String gender;
+    @Basic(optional = false)
+    @NotNull
+    @Column(name = "is_active")
+    private boolean isActive;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    private Set<UserNotification> userNotificationSet;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    private Set<TrafficReport> trafficReportSet;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    private Set<FavoriteRoute> favoriteRouteSet;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
-
-    // Constructors
     public User() {
     }
 
@@ -66,24 +113,17 @@ public class User implements Serializable {
         this.id = id;
     }
 
-    public User(Integer id, String fullName, String email, String phone, String username,
-                String password, LocalDate birthday, String avatar, String userRole,
-                LocalDateTime createdAt, String gender, Boolean isActive) {
+    public User(Integer id, String fullName, String email, String phone, String username, String password, String userRole, boolean isActive) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
         this.username = username;
         this.password = password;
-        this.birthday = birthday;
-        this.avatar = avatar;
         this.userRole = userRole;
-        this.createdAt = createdAt;
-        this.gender = gender;
         this.isActive = isActive;
     }
 
-    // Getters & Setters
     public Integer getId() {
         return id;
     }
@@ -132,11 +172,11 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public LocalDate getBirthday() {
+    public Date getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(LocalDate birthday) {
+    public void setBirthday(Date birthday) {
         this.birthday = birthday;
     }
 
@@ -156,11 +196,11 @@ public class User implements Serializable {
         this.userRole = userRole;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
@@ -172,30 +212,61 @@ public class User implements Serializable {
         this.gender = gender;
     }
 
-    public Boolean getIsActive() {
+    public boolean getIsActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
+    public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
 
-    // hashCode, equals, toString
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+    public Set<UserNotification> getUserNotificationSet() {
+        return userNotificationSet;
+    }
+
+    public void setUserNotificationSet(Set<UserNotification> userNotificationSet) {
+        this.userNotificationSet = userNotificationSet;
+    }
+
+    public Set<TrafficReport> getTrafficReportSet() {
+        return trafficReportSet;
+    }
+
+    public void setTrafficReportSet(Set<TrafficReport> trafficReportSet) {
+        this.trafficReportSet = trafficReportSet;
+    }
+
+    public Set<FavoriteRoute> getFavoriteRouteSet() {
+        return favoriteRouteSet;
+    }
+
+    public void setFavoriteRouteSet(Set<FavoriteRoute> favoriteRouteSet) {
+        this.favoriteRouteSet = favoriteRouteSet;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof User))
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof User)) {
             return false;
-        User other = (User) obj;
-        return id != null && id.equals(other.getId());
+        }
+        User other = (User) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-        return "User{id=" + id + ", fullName=" + fullName + '}';
+        return "com.quinhat.pojo.User[ id=" + id + " ]";
     }
+
 }

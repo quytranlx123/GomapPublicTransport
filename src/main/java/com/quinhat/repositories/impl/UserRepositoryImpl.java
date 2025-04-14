@@ -10,6 +10,7 @@ import jakarta.persistence.Query;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Autowired
     private LocalSessionFactoryBean factory;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public User getUserByUsername(String username) {
@@ -38,9 +41,21 @@ public class UserRepositoryImpl implements UserRepository {
     public User addUser(User u) {
         Session s = this.factory.getObject().getCurrentSession();
         s.persist(u);
-        
-        s.refresh(u);
-        
+
         return u;
+    }
+
+    @Override
+    public User updateUser(User u) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.merge(u);
+        return u;
+    }
+
+    @Override
+    public boolean authenticate(String username, String password) {
+        User u = this.getUserByUsername(username);
+
+        return this.passwordEncoder.matches(password, u.getPassword());
     }
 }

@@ -6,6 +6,8 @@ package com.quinhat.configs;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.quinhat.utils.JwtAuthenticationFilter;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -16,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
@@ -42,20 +45,34 @@ public class SpringSecurityConfigs {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws
-            Exception {
-        http.csrf(c -> c.disable()).authorizeHttpRequests(requests
-                -> requests.requestMatchers("/", "/home").authenticated()
-                        .requestMatchers("/api/users", "/api/cart").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/products").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,
-                                "/products/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated())
-                .formLogin(form -> form.loginPage("/login")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors(cors -> cors.configurationSource(request -> {
+            var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+            corsConfig.setAllowedOrigins(List.of("http://localhost:5173")); // Thay bằng URL frontend của bạn
+            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+            corsConfig.setAllowedHeaders(List.of("*"));
+            corsConfig.setExposedHeaders(List.of("Authorization"));
+            corsConfig.setAllowCredentials(true);
+            return corsConfig;
+        }))
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+                .requestMatchers("/api/users", "/api/cart", "/api/traffic-reports/**").permitAll()
+                .requestMatchers("/api/users/change-password").authenticated()
+                .requestMatchers(HttpMethod.GET, "/products").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form
+                .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true").permitAll())
+                .failureUrl("/login?error=true")
+                .permitAll()
+                )
                 .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());
+
         return http.build();
     }
 
