@@ -21,3 +21,6 @@ ALTER TABLE User_Notification AUTO_INCREMENT = 1;
 ALTER TABLE Notification AUTO_INCREMENT = 1;
 ALTER TABLE User AUTO_INCREMENT = 1;
 SET SQL_SAFE_UPDATES = 1;
+
+-- --Xuất file database-- -- 
+-- mysqldump -u root -p gomap_public_transport_db > gomap_public_transport_db.sql
