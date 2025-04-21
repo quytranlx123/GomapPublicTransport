@@ -5,6 +5,7 @@
 package com.quinhat.services;
 
 import com.quinhat.pojo.User;
+import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,15 @@ import org.springframework.web.multipart.MultipartFile;
  * @author admin
  */
 public interface UserService extends UserDetailsService {
+    //Qui
+
+    void save(User user);
+
+    void deleteUser(int id);
+
+    List<User> getAllUsers();
+    
+    //Qui
 
     User getUserByUsername(String username);
 

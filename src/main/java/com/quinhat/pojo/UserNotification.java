@@ -50,8 +50,8 @@ public class UserNotification implements Serializable {
     @JoinColumn(name = "notification_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Notification notificationId;
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
+    @ManyToOne
     private User userId;
 
     public UserNotification() {

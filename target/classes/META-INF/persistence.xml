@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
-    <!-- Define Persistence Unit -->
-    <persistence-unit name="my_persistence_unit">
-        
-    </persistence-unit>
+  <!-- Define Persistence Unit -->
+  <persistence-unit name="my_persistence_unit">
+    <class>com.quinhat.pojo.User</class>
+    <class>com.quinhat.pojo.FavoriteRoute</class>
+    <class>com.quinhat.pojo.Vehicle</class>
+    <class>com.quinhat.pojo.Schedule</class>
+    <class>com.quinhat.pojo.UserNotification</class>
+    <class>com.quinhat.pojo.TrafficReport</class>
+    <class>com.quinhat.pojo.Notification</class>
+    <class>com.quinhat.pojo.Route</class>
+    <class>com.quinhat.pojo.Station</class>
+    <class>com.quinhat.pojo.RouteStation</class>
+  </persistence-unit>
 </persistence>

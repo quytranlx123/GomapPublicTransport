@@ -80,8 +80,8 @@ public class TrafficReport implements Serializable {
     @Column(name = "is_verified")
     private boolean isVerified;
     @JsonIgnore
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true) //chấp nhận null để xoá user không bị xoá lan truyền
+    @ManyToOne
     private User userId;
 //    @Transient
 //    private MultipartFile file;

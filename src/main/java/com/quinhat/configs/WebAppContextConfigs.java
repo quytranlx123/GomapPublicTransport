@@ -47,6 +47,7 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
     public StandardServletMultipartResolver multipartResolver() {
         return new StandardServletMultipartResolver();
     }
+    
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

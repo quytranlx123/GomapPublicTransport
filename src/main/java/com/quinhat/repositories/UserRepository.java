@@ -5,12 +5,20 @@
 package com.quinhat.repositories;
 
 import com.quinhat.pojo.User;
+import java.util.List;
 
 /**
  *
  * @author admin
  */
 public interface UserRepository {
+    //Qui
+    boolean deleteUser(int id);
+
+    List<User> getAllUsers();
+    
+    void save(User user);
+    //Quí
 
     User getUserByUsername(String username);
 

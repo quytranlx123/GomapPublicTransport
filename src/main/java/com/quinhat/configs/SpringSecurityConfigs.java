@@ -65,10 +65,10 @@ public class SpringSecurityConfigs {
                 .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true")
+                .loginPage("/admin/dashboard/login")
+                .loginProcessingUrl("/admin/dashboard/login")
+                .defaultSuccessUrl("/admin/dashboard", true)
+                .failureUrl("/admin/dashboard/login?error=true")
                 .permitAll()
                 )
                 .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());

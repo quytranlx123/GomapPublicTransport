@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -167,6 +168,23 @@ public class UserServiceImpl implements UserService {
         }
 
         return false;
+    }
+
+    //Qui
+    @Override
+    public List<User> getAllUsers() {
+        return userRepo.getAllUsers();
+    }
+    //Qui
+
+    @Override
+    public void save(User user) {
+        userRepo.save(user);
+    }
+
+    @Override
+    public void deleteUser(int id) {
+        userRepo.deleteUser(id);
     }
 
 }

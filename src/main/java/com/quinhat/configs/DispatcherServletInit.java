@@ -6,6 +6,8 @@ package com.quinhat.configs;
 
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
@@ -13,6 +15,13 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
  * @author admin
  */
 public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    //Qui
+    @Bean
+    public StandardServletMultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
+    }
+    //Quí
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
@@ -37,7 +46,7 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
 
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
-        String location = "/";
+        String location = "/tmp";
         long maxFileSize = 5242880; // 5MB
         long maxRequestSize = 20971520; // 20MB
         int fileSizeThreshold = 0;
