@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -23,6 +24,7 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -83,6 +85,7 @@ public class User implements Serializable {
     private String password;
     @Column(name = "birthday")
     @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date birthday;
     @Size(max = 255)
     @Column(name = "avatar")
@@ -92,7 +95,7 @@ public class User implements Serializable {
     @Size(min = 1, max = 5)
     @Column(name = "user_role")
     private String userRole;
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
     @Size(max = 6)
@@ -278,6 +281,11 @@ public class User implements Serializable {
     public void setEncryptedPassword(String password) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         this.password = encoder.encode(password);
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
     }
 
 }

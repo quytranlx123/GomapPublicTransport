@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,4 +61,9 @@ public class UserController {
         return uploadDir + fileName;  // Trả về đường dẫn file đã lưu
     }
 
+    @PostMapping("/delete/{id}")
+    public String deleteUser(@PathVariable int id) {
+        userService.deleteUser(id);
+        return "redirect:/admin/dashboard";
+    }
 }
