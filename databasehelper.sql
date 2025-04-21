@@ -22,5 +22,6 @@ ALTER TABLE Notification AUTO_INCREMENT = 1;
 ALTER TABLE User AUTO_INCREMENT = 1;
 SET SQL_SAFE_UPDATES = 1;
 
--- --Xuất file database-- -- 
+
+-- xuất file database, vị trí của file ở tại thư mục cmd đang thực hiện dòng lệnh
 -- mysqldump -u root -p gomap_public_transport_db > gomap_public_transport_db.sql
