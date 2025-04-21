@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  *
@@ -272,6 +273,11 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return "com.quinhat.pojo.User[ id=" + id + " ]";
+    }
+
+    public void setEncryptedPassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        this.password = encoder.encode(password);
     }
 
 }

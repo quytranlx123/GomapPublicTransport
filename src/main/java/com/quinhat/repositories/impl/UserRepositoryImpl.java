@@ -97,13 +97,26 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void save(User user) {
         Session s = this.factory.getObject().getCurrentSession();
-        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
-            user.setAvatar(null); // hoặc URL mặc định của bạn
+
+        // Nếu password chưa mã hoá, hoặc người dùng nhập lại mới thì mã hoá
+        if (user.getId() == null || isPlainPassword(user.getPassword())) {
+            String password = user.getPassword();
+            user.setEncryptedPassword(password);
         }
+
+        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
+            user.setAvatar(null); // Hoặc set URL mặc định
+        }
+
         if (user.getId() == null) {
             s.persist(user);
         } else {
             s.merge(user);
         }
     }
+
+    private boolean isPlainPassword(String password) {
+        return password != null && !password.startsWith("$2a$") && !password.startsWith("$2b$");
+    }
+
 }
