@@ -24,4 +24,4 @@ SET SQL_SAFE_UPDATES = 1;
 
 
 -- xuất file database, vị trí của file ở tại thư mục cmd đang thực hiện dòng lệnh
--- mysqldump -u root -p gomap_public_transport_db > gomap_public_transport_db.sql
+mysqldump -u root -p gomap_public_transport_db > gomap_public_transport_db.sql
