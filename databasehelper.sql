@@ -24,4 +24,8 @@ SET SQL_SAFE_UPDATES = 1;
 
 
 -- xuất file database, vị trí của file ở tại thư mục cmd đang thực hiện dòng lệnh
+-- terminal hoặc cmd đã install mysql
+-- terminal:
+-- /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+-- brew install mysql
 mysqldump -u root -p gomap_public_transport_db > gomap_public_transport_db.sql
