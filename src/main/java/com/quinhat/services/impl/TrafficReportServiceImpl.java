@@ -116,4 +116,9 @@ public class TrafficReportServiceImpl implements TrafficReportService {
         return this.trafficReportRepo.updateTrafficReport(report);
     }
 
+    @Override
+    public List<TrafficReport> getAllTrafficReports() {
+        return trafficReportRepo.getAllTrafficReports();
+    }
+
 }

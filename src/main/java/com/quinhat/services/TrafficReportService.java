@@ -15,6 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
  * @author ASUS
  */
 public interface TrafficReportService {
+    
+//    Qui
+    List<TrafficReport> getAllTrafficReports();
+//    Qui
 
     List<TrafficReport> getTrafficReports(Map<String, String> params);
 

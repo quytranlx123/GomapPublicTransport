@@ -98,4 +98,10 @@ public class TrafficReportRepositoryImpl implements TrafficReportRepository {
         return p;
     }
 
+    @Override
+    public List<TrafficReport> getAllTrafficReports() {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("FROM TrafficReport", TrafficReport.class).getResultList();
+    }
+
 }

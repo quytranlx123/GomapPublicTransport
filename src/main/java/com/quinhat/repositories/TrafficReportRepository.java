@@ -14,14 +14,18 @@ import java.util.Map;
  */
 public interface TrafficReportRepository {
 
+//    Qui
+    List<TrafficReport> getAllTrafficReports();
+//    Qui
+
     List<TrafficReport> getTrafficReports(Map<String, String> params);
 
     TrafficReport createTrafficReport(TrafficReport p);
-    
+
     TrafficReport updateTrafficReport(TrafficReport p);
 
     TrafficReport getTrafficReportById(int id);
 
     void deleteTrafficReport(int id);
-   
+
 }

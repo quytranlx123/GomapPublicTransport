@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @author admin
  */
+
 public interface UserRepository {
     //Qui
     boolean deleteUser(int id);
