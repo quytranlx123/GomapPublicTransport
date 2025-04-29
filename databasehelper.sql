@@ -23,6 +23,11 @@ ALTER TABLE User AUTO_INCREMENT = 1;
 SET SQL_SAFE_UPDATES = 1;
 
 
+DROP DATABASE gomap_public_transport_db;
+CREATE DATABASE gomap_public_transport_db;
+USE gomap_public_transport_db;
+
+
 -- xuất file database, vị trí của file ở tại thư mục cmd đang thực hiện dòng lệnh
 -- terminal hoặc cmd đã install mysql
 -- terminal:
