@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface StationService {
+
     public List<Station> getAllStations();
+
+    void save(Station station);
+
 }

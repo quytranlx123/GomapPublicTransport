@@ -15,11 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
  * @author ASUS
  */
 public interface TrafficReportService {
-    
+
 //    Qui
     List<TrafficReport> getAllTrafficReports();
-//    Qui
 
+    void save(TrafficReport trafficReport);
+
+//    Qui
     List<TrafficReport> getTrafficReports(Map<String, String> params);
 
     TrafficReport createTrafficReport(Map<String, String> params, MultipartFile image, User user);

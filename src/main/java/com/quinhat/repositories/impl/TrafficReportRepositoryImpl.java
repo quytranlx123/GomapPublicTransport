@@ -104,4 +104,14 @@ public class TrafficReportRepositoryImpl implements TrafficReportRepository {
         return s.createQuery("FROM TrafficReport", TrafficReport.class).getResultList();
     }
 
+    @Override
+    public void save(TrafficReport trafficReport) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (trafficReport.getId() == null) {
+            s.persist(trafficReport);
+        } else {
+            s.merge(trafficReport);
+        }
+    }
+
 }

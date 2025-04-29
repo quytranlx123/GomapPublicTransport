@@ -21,4 +21,17 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM Schedule", Schedule.class).getResultList();
     }
+
+    @Override
+    public void save(Schedule schedule) {
+        Session session = this.factory.getObject().getCurrentSession();
+        
+        // Nếu schedule chưa có id (đối tượng mới), sử dụng persist
+        if (schedule.getId() == null) {
+            session.persist(schedule);
+        } else {
+            // Nếu schedule đã có id (đối tượng đã tồn tại), sử dụng merge
+            session.merge(schedule);
+        }
+    }
 }

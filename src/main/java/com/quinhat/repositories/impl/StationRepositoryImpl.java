@@ -21,4 +21,15 @@ public class StationRepositoryImpl implements StationRepository {
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM Station", Station.class).getResultList();
     }
+
+    @Override
+    public void save(Station station) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (station.getId() == null) {
+            s.persist(station);
+        } else {
+            s.merge(station);
+          
+        }
+    }
 }

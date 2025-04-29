@@ -16,8 +16,10 @@ public interface TrafficReportRepository {
 
 //    Qui
     List<TrafficReport> getAllTrafficReports();
-//    Qui
 
+    void save(TrafficReport trafficReport);
+
+//    Qui
     List<TrafficReport> getTrafficReports(Map<String, String> params);
 
     TrafficReport createTrafficReport(TrafficReport p);

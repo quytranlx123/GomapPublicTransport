@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public interface VehicleRepository {
-    
-    public List<Vehicle> getAllVehicles();
-    
-    
-}
 
+    public List<Vehicle> getAllVehicles();
+
+    void save(Vehicle vehicle);
+
+}

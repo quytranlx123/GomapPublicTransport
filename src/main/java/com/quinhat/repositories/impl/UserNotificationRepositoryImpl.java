@@ -21,4 +21,14 @@ public class UserNotificationRepositoryImpl implements UserNotificationRepositor
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM UserNotification", UserNotification.class).getResultList();
     }
+
+    @Override
+    public void save(UserNotification userNotification) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (userNotification.getId() == null) {
+            s.persist(userNotification);
+        } else {
+            s.merge(userNotification);
+        }
+    }
 }

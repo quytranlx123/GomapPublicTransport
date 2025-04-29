@@ -12,5 +12,11 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface RouteService {
+
     public List<Route> getAllRoutes();
+
+    void save(Route route);
+
+    Route getRouteById(int id);
+
 }

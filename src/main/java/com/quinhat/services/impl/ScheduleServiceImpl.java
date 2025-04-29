@@ -17,4 +17,9 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<Schedule> getAllSchedules() {
         return scheduleRepo.getAllSchedules();
     }
+
+    @Override
+    public void save(Schedule schedule) {
+        scheduleRepo.save(schedule);
+    }
 }

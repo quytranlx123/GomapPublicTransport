@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface FavoriteRouteService {
-        public List<FavoriteRoute> getAllFavoriteRoutes();
+
+    public List<FavoriteRoute> getAllFavoriteRoutes();
+
+    void save(FavoriteRoute favoriteRoute);
+
 }

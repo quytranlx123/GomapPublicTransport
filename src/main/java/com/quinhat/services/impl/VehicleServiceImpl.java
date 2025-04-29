@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
  * @author tranngocqui
  */
 @Service
-public class VehicleServiceImpl implements VehicleService{
-    
+public class VehicleServiceImpl implements VehicleService {
+
     @Autowired
     private VehicleRepository vehicleRepo;
 
@@ -26,5 +26,10 @@ public class VehicleServiceImpl implements VehicleService{
     public List<Vehicle> getAllVehicles() {
         return vehicleRepo.getAllVehicles();
     }
-    
+
+    @Override
+    public void save(Vehicle vehicle) {
+        vehicleRepo.save(vehicle);
+    }
+
 }

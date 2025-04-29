@@ -17,4 +17,9 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     public List<UserNotification> getAllUserNotifications() {
         return userNotificationRepo.getAllUserNotifications();
     }
+
+    @Override
+    public void save(UserNotification userNotification) {
+        userNotificationRepo.save(userNotification);
+    }
 }

@@ -21,4 +21,14 @@ public class FavoriteRouteRepositoryImpl implements FavoriteRouteRepository {
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM FavoriteRoute", FavoriteRoute.class).getResultList();
     }
+
+    @Override
+    public void save(FavoriteRoute favoriteRoute) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (favoriteRoute.getId() == null) {
+            s.persist(favoriteRoute);
+        } else {
+            s.merge(favoriteRoute);
+        }
+    }
 }

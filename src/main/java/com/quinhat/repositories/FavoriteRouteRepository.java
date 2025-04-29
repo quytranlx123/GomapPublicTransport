@@ -4,5 +4,9 @@ import com.quinhat.pojo.FavoriteRoute;
 import java.util.List;
 
 public interface FavoriteRouteRepository {
+
     List<FavoriteRoute> getAllFavoriteRoutes();
+
+    void save(FavoriteRoute favoriteRoute);
+
 }

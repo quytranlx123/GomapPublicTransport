@@ -21,4 +21,20 @@ public class RouteRepositoryImpl implements RouteRepository {
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM Route", Route.class).getResultList();
     }
+
+    @Override
+    public void save(Route route) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (route.getId() == null) {
+            s.persist(route);
+        } else {
+            s.merge(route);
+        }
+    }
+
+    @Override
+    public Route getRouteById(int id) {
+        Session session = factory.getObject().getCurrentSession();
+        return session.get(Route.class, id);
+    }
 }

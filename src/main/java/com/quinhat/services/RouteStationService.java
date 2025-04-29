@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface RouteStationService {
+
     public List<RouteStation> getAllRouteStations();
+
+    void save(RouteStation routeStation);
+
 }

@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface UserNotificationService {
+
     public List<UserNotification> getAllUserNotifications();
+
+    void save(UserNotification userNotification);
+
 }

@@ -32,4 +32,14 @@ public class VehicleRepositoryImpl implements VehicleRepository {
 
     }
 
+    @Override
+    public void save(Vehicle vehicle) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (vehicle.getId() == null) {
+            s.persist(vehicle);
+        } else {
+            s.merge(vehicle);
+        }
+    }
+
 }

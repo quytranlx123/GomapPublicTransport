@@ -4,15 +4,18 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.pojo.User;
 import java.util.List;
 import com.quinhat.pojo.Vehicle;
-    
+
 /**
  *
  * @author tranngocqui
  */
 public interface VehicleService {
-    
+
     List<Vehicle> getAllVehicles();
-    
+
+    void save(Vehicle vehicle);
+
 }

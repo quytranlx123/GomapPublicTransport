@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface NotificationService {
-        public List<Notification> getAllNotifications();
+
+    public List<Notification> getAllNotifications();
+
+    void save(Notification notification);
+
 }

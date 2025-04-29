@@ -21,4 +21,14 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         Session s = this.factory.getObject().getCurrentSession();
         return s.createQuery("FROM Notification", Notification.class).getResultList();
     }
+
+    @Override
+    public void save(Notification notification) {
+        Session s = this.factory.getObject().getCurrentSession();
+        if (notification.getId() == null) {
+            s.persist(notification);
+        } else {
+            s.merge(notification);
+        }
+    }
 }

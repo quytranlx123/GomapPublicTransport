@@ -20,6 +20,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -42,11 +43,13 @@ public class Schedule implements Serializable {
     private Integer id;
     @Basic(optional = false)
     @NotNull
+    @DateTimeFormat(pattern = "HH:mm:ss")
     @Column(name = "departure_time")
     @Temporal(TemporalType.TIME)
     private Date departureTime;
     @Basic(optional = false)
     @NotNull
+    @DateTimeFormat(pattern = "HH:mm:ss")
     @Column(name = "arrival_time")
     @Temporal(TemporalType.TIME)
     private Date arrivalTime;

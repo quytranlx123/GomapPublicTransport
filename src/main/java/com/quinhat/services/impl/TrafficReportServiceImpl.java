@@ -121,4 +121,9 @@ public class TrafficReportServiceImpl implements TrafficReportService {
         return trafficReportRepo.getAllTrafficReports();
     }
 
+    @Override
+    public void save(TrafficReport trafficReport) {
+        trafficReportRepo.save(trafficReport);
+    }
+
 }

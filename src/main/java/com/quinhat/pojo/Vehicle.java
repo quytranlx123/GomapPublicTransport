@@ -29,6 +29,7 @@ import java.util.Set;
  *
  * @author ASUS
  */
+
 @Entity
 @Table(name = "vehicle")
 @NamedQueries({

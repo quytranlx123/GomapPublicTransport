@@ -22,6 +22,7 @@ import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  *
@@ -77,9 +78,11 @@ public class Route implements Serializable {
     private String frequency;
     @Column(name = "start_time")
     @Temporal(TemporalType.TIME)
+    @DateTimeFormat(pattern = "HH:mm:ss")
     private Date startTime;
     @Column(name = "end_time")
     @Temporal(TemporalType.TIME)
+    @DateTimeFormat(pattern = "HH:mm:ss")
     private Date endTime;
     @Basic(optional = false)
     @NotNull
@@ -253,5 +256,5 @@ public class Route implements Serializable {
     public String toString() {
         return "com.quinhat.pojo.Route[ id=" + id + " ]";
     }
-    
+
 }

@@ -12,5 +12,9 @@ import java.util.List;
  * @author tranngocqui
  */
 public interface ScheduleService {
+
     public List<Schedule> getAllSchedules();
+
+    void save(Schedule schedule);
+
 }

@@ -17,4 +17,9 @@ public class FavoriteRouteServiceImpl implements FavoriteRouteService {
     public List<FavoriteRoute> getAllFavoriteRoutes() {
         return favoriteRouteRepo.getAllFavoriteRoutes();
     }
+
+    @Override
+    public void save(FavoriteRoute favoriteRoute) {
+        favoriteRouteRepo.save(favoriteRoute);
+    }
 }

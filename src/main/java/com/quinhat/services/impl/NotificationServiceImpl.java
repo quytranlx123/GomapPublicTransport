@@ -17,4 +17,9 @@ public class NotificationServiceImpl implements NotificationService {
     public List<Notification> getAllNotifications() {
         return notificationRepo.getAllNotifications();
     }
+
+    @Override
+    public void save(Notification notification) {
+        notificationRepo.save(notification);
+    }
 }

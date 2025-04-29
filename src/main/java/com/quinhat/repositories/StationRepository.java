@@ -4,5 +4,9 @@ import com.quinhat.pojo.Station;
 import java.util.List;
 
 public interface StationRepository {
+
     List<Station> getAllStations();
+
+    void save(Station station);
+
 }

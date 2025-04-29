@@ -15,8 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
  * @author admin
 */
 public interface UserService extends UserDetailsService {
+    
     //Qui
-
     void save(User user);
 
     void deleteUser(int id);

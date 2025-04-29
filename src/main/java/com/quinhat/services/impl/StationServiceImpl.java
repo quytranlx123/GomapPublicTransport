@@ -17,4 +17,9 @@ public class StationServiceImpl implements StationService {
     public List<Station> getAllStations() {
         return stationRepo.getAllStations();
     }
+
+    @Override
+    public void save(Station station) {
+        stationRepo.save(station);
+    }
 }

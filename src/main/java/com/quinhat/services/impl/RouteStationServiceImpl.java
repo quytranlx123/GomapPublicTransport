@@ -17,4 +17,9 @@ public class RouteStationServiceImpl implements RouteStationService {
     public List<RouteStation> getAllRouteStations() {
         return routeStationRepo.getAllRouteStations();
     }
+
+    @Override
+    public void save(RouteStation routeStation) {
+        routeStationRepo.save(routeStation);
+    }
 }

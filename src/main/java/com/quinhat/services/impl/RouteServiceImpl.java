@@ -17,4 +17,14 @@ public class RouteServiceImpl implements RouteService {
     public List<Route> getAllRoutes() {
         return routeRepo.getAllRoutes();
     }
+
+    @Override
+    public void save(Route route) {
+        routeRepo.save(route);
+    }
+
+    @Override
+    public Route getRouteById(int id) {
+        return routeRepo.getRouteById(id);
+    }
 }

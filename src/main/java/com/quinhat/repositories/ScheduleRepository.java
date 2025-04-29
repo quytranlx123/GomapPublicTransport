@@ -15,4 +15,6 @@ public interface ScheduleRepository {
 
     List<Schedule> getAllSchedules();
 
+    void save(Schedule schedule);
+
 }
