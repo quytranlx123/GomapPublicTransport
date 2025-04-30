@@ -2,6 +2,7 @@ com/quinhat/configs/SpringSecurityConfigs.class
 com/quinhat/services/UserNotificationService.class
 com/quinhat/repositories/impl/UserNotificationRepositoryImpl.class
 com/quinhat/controllers/UserNotificationController.class
+com/quinhat/repositories/impl/RouteRepositoryImpl$RouteEdge.class
 com/quinhat/controllers/UserController.class
 com/quinhat/services/RouteStationService.class
 com/quinhat/controllers/FavoriteRouteController.class
@@ -30,6 +31,7 @@ com/quinhat/pojo/TrafficReport.class
 com/quinhat/dto/ApiResponse.class
 com/quinhat/pojo/RouteStation.class
 com/quinhat/services/TrafficReportService.class
+com/quinhat/repositories/impl/RouteRepositoryImpl$BFSNode.class
 com/quinhat/repositories/impl/RouteRepositoryImpl.class
 com/quinhat/repositories/StationRepository.class
 com/quinhat/controllers/ApiUserController.class
