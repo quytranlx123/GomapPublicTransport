@@ -9,6 +9,7 @@ import com.quinhat.pojo.Vehicle;
 import com.quinhat.repositories.VehicleRepository;
 import java.util.List;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
@@ -40,6 +41,18 @@ public class VehicleRepositoryImpl implements VehicleRepository {
         } else {
             s.merge(vehicle);
         }
+    }
+
+    @Override
+    public List<Vehicle> getVehiclesByRouteId(int routeId) {
+        Session session = this.factory.getObject().getCurrentSession();
+
+        String hql = "FROM Vehicle v WHERE v.routeId.id = :routeId AND v.isActive = true";
+
+        Query<Vehicle> query = session.createQuery(hql, Vehicle.class);
+        query.setParameter("routeId", routeId);
+
+        return query.getResultList();
     }
 
 }

@@ -13,11 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author tranngocqui
  */
-
 public interface VehicleRepository {
 
+    //Qui
     public List<Vehicle> getAllVehicles();
 
     void save(Vehicle vehicle);
+    //Qui
+
+    List<Vehicle> getVehiclesByRouteId(int routeId);
 
 }
