@@ -23,9 +23,8 @@ public interface RouteService {
 
     Route getRouteById_Qui(int id);
     //Qui
-    
-        // Tìm các tuyến xe từ điểm đi đến điểm đến
 
+    // Tìm các tuyến xe từ điểm đi đến điểm đến
     List<Route> getRoutesByStartAndEndPoints(Map<String, String> params);
 
     // Tạo tuyến xe mới

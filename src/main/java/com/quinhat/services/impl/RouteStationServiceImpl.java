@@ -22,4 +22,9 @@ public class RouteStationServiceImpl implements RouteStationService {
     public void save(RouteStation routeStation) {
         routeStationRepo.save(routeStation);
     }
+
+    @Override
+    public List<List<RouteStation>> findStationsWithPossibleTransfer(int departureStationId, int arrivalStationId) {
+        return routeStationRepo.findStationsWithPossibleTransfer(departureStationId, arrivalStationId);
+    }
 }

@@ -14,8 +14,12 @@ import com.quinhat.pojo.Vehicle;
  */
 public interface VehicleService {
 
+    //Qui
     List<Vehicle> getAllVehicles();
 
     void save(Vehicle vehicle);
+    //Qui
+
+    List<Vehicle> getVehiclesByRouteId(int routeId);
 
 }

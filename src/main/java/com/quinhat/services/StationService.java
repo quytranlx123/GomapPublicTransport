@@ -4,8 +4,10 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -13,8 +15,16 @@ import java.util.List;
  */
 public interface StationService {
 
+    //Qui
     public List<Station> getAllStations();
 
     void save(Station station);
+    //Qui
+
+    List<Station> findNearestStations(float latitude, float longitude, int limit);
+
+    List<Station> getStations(Map<String, String> params);
+
+    List<RouteStation> getStationsByRouteId(int routeId);
 
 }

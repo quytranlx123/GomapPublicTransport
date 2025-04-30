@@ -17,4 +17,6 @@ public interface RouteStationService {
 
     void save(RouteStation routeStation);
 
+    List<List<RouteStation>> findStationsWithPossibleTransfer(int departureStationId, int arrivalStationId);
+
 }

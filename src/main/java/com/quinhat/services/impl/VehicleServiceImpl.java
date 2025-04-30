@@ -32,4 +32,9 @@ public class VehicleServiceImpl implements VehicleService {
         vehicleRepo.save(vehicle);
     }
 
+    @Override
+    public List<Vehicle> getVehiclesByRouteId(int routeId) {
+        return this.vehicleRepo.getVehiclesByRouteId(routeId);
+    }
+
 }
