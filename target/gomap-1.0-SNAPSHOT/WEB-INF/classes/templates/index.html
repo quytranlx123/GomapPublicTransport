@@ -26,8 +26,67 @@
                 max-width: 100px;
             }
         </style>
+
+        <!--mapbox-->
+        <!-- Mapbox CSS -->
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+        <!-- Mapbox JS -->
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+        <!-- Mapbox Geocoder CSS & JS -->
+        <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" />
+        <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+
+
     </head>
     <body>
+
+        <!--mapbox-->
+        <div id="map" style="width: 100%; height: 400px;"></div>
+        <script>
+            // Khởi tạo map
+            mapboxgl.accessToken = 'pk.eyJ1IjoicXV5dHJhbmx4MTIzIiwiYSI6ImNtYTdxYnNsZTBpaXIyam9iNTRzNDN3YWIifQ.zWSkoAn4LPl8DzJL4fLmCw';
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [106.660172, 10.762622], // Ho Chi Minh
+                zoom: 12
+            });
+
+            // Thêm Autocomplete (Geocoder)
+            const geocoder = new MapboxGeocoder({
+                accessToken: mapboxgl.accessToken,
+                mapboxgl: mapboxgl,
+                placeholder: 'Nhập địa chỉ điểm đi hoặc điểm đến',
+                marker: true, // Hiển thị marker
+            });
+
+            // Thêm geocoder vào bản đồ
+            map.addControl(geocoder);
+
+            // Lấy kết quả địa chỉ
+            geocoder.on('result', function (e) {
+                console.log('Vị trí đã chọn:', e.result);
+                // e.result.geometry.coordinates => [longitude, latitude]
+                // e.result.place_name => tên địa điểm đầy đủ
+            });
+
+            fetch('/gomap/api/stations/list')
+                    .then(res => res.json())
+                    .then(response => {
+                        const locations = response.data; // Truy cập đúng vào mảng
+                        locations.forEach(loc => {
+                            new mapboxgl.Marker()
+                                    .setLngLat([parseFloat(loc.longitude), parseFloat(loc.latitude)])
+                                    .setPopup(new mapboxgl.Popup().setText(loc.name))
+                                    .addTo(map);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Lỗi khi tải dữ liệu:", error);
+                    });
+        </script>
+
         <!--Đầu người dùng-->
         <div class="container mt-5">
             <h1 class="text-center mb-4"T> </h1>
@@ -237,7 +296,7 @@
                 </div>
                 <!--Cuối route-->
 
-                <!--Đầu trạm dừng-->
+                <!--Đầu station-->
                 <div class="tab-pane fade" id="stations" role="tabpanel">
                     <h3>Manage Stations</h3>
                     <table class="table table-bordered table-striped">
@@ -274,10 +333,13 @@
                                         <input type="text" class="form-control" name="address" placeholder="Address">
                                     </div>
                                     <div class="col-md-6">
-                                        <input type="number" step="0.000001" class="form-control" name="latitude" placeholder="Latitude" required>
+                                        <input type="text" class="form-control" name="latitude" id="latitude" placeholder="Latitude" required>
+                                        <small id="latitude-error" class="text-danger d-none">Latitude phải là số thực trong khoảng [-90; 90]</small>
                                     </div>
+
                                     <div class="col-md-6">
-                                        <input type="number" step="0.000001" class="form-control" name="longitude" placeholder="Longitude" required>
+                                        <input type="text" class="form-control" name="longitude" id="longitude" placeholder="Longitude" required>
+                                        <small id="longitude-error" class="text-danger d-none">Longitude phải là số thực trong khoảng [-180; 180]</small>
                                     </div>
                                 </div>
                                 <div class="mt-3 text-end">
@@ -287,9 +349,9 @@
                         </div>
                     </div>
                 </div>
-                <!--Cuối trạm dừng-->
+                <!--Cuối station-->
 
-                <!--Đầu phương tiện-->
+                <!--Đầu vehicle -->
                 <div class="tab-pane fade" id="vehicles" role="tabpanel">
                     <h3>Manage Vehicles</h3>
                     <table class="table table-bordered table-striped">
@@ -364,9 +426,9 @@
                         </div>
                     </div>
                 </div>
-                <!--Cuối phương tiện-->
+                <!--Cuối vehicle-->
 
-                <!-- Đầu thông báo -->
+                <!-- Đầu notification -->
                 <div class="tab-pane fade" id="notifications" role="tabpanel">
                     <h3>Manage Notifications</h3>
                     <table class="table table-bordered table-striped">
@@ -417,7 +479,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Cuối thông báo -->
+                <!-- Cuối notification  -->
 
 
 
@@ -788,7 +850,6 @@
         <script>
             const startPoint = document.getElementById('startPoint');
             const endPoint = document.getElementById('endPoint');
-
             function validateDifferent() {
                 if (startPoint.value && endPoint.value && startPoint.value === endPoint.value) {
                     alert("Điểm bắt đầu và điểm kết thúc không được trùng nhau.");
@@ -799,18 +860,65 @@
 
             startPoint.addEventListener('change', validateDifferent);
             endPoint.addEventListener('change', validateDifferent);
-
-
             document.addEventListener("DOMContentLoaded", function () {
                 const routeNumberInput = document.getElementById("routeNumber");
                 const routeNameInput = document.getElementById("routName");
-
                 routeNumberInput.addEventListener("input", function () {
                     const number = routeNumberInput.value;
                     routeNameInput.value = number ? `Tuyến số ${number}` : "";
                 });
             });
-
         </script>
+
+        <!--js station-->
+        <script>
+            function isValidDouble(value) {
+                const cleaned = value.replace(",", ".");
+                const num = parseFloat(cleaned);
+                return !isNaN(num) && isFinite(num);
+            }
+
+            function parseToFloat(value) {
+                return parseFloat(value.replace(",", "."));
+            }
+
+            const latitudeInput = document.getElementById("latitude");
+            const latitudeError = document.getElementById("latitude-error");
+            const longitudeInput = document.getElementById("longitude");
+            const longitudeError = document.getElementById("longitude-error");
+            function normalizeInput(input) {
+                input.addEventListener("input", () => {
+                    // Tự động thay , thành . ngay trong ô input
+                    if (input.value.includes(",")) {
+                        input.value = input.value.replace(",", ".");
+                    }
+
+                    const value = input.value.trim();
+                    const num = parseToFloat(value);
+                    if (input === latitudeInput) {
+                        if (!isValidDouble(value) || num < -90 || num > 90) {
+                            latitudeError.classList.remove("d-none");
+                        } else {
+                            latitudeError.classList.add("d-none");
+                        }
+                    }
+
+                    if (input === longitudeInput) {
+                        if (!isValidDouble(value) || num < -180 || num > 180) {
+                            longitudeError.classList.remove("d-none");
+                        } else {
+                            longitudeError.classList.add("d-none");
+                        }
+                    }
+                });
+            }
+
+            normalizeInput(latitudeInput);
+            normalizeInput(longitudeInput);
+        </script>
+
+
+
+
     </body>
 </html>
