@@ -17,4 +17,9 @@ public interface FavoriteRouteService {
 
     void save(FavoriteRoute favoriteRoute);
 
+    List<FavoriteRoute> getFavoriteRoutesByUserId(Integer userId);
+
+    void create(Integer userId, Integer routeId);
+
+    void delete(Integer favoriteRouteId);
 }
