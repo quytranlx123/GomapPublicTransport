@@ -17,4 +17,8 @@ public interface UserNotificationService {
 
     void save(UserNotification userNotification);
 
+    List<UserNotification> getNotificationsByUserId(Integer userId);
+
+    UserNotification create(UserNotification u);
+
 }
