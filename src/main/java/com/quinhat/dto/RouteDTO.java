@@ -19,9 +19,8 @@ public class RouteDTO {
     private float distance;
     private int duration;
     private Date createdAt;
-    private List<StationDTO> routeStations;  // Chỉ chứa danh sách StationDTO
+    private List<StationDTO> routeStations;
 
-    // Constructor
     public RouteDTO(Integer id, String startPoint, String endPoint, String name, String status, String frequency,
             Date startTime, Date endTime, float distance, int duration, Date createdAt,
             List<StationDTO> routeStations) {
@@ -69,8 +68,8 @@ public class RouteDTO {
                 route.getDuration(),
                 route.getCreatedAt(),
                 route.getRouteStationSet().stream()
-                        .map(routeStation -> StationDTO.fromEntity(routeStation)) // Truyền routeStation thay vì ID
-                        .collect(Collectors.toList()) // Thu thập đúng kiểu
+                        .map(routeStation -> StationDTO.fromEntity(routeStation))
+                        .collect(Collectors.toList())
         );
     }
 
@@ -97,10 +96,11 @@ public class RouteDTO {
 
         Route route = routeStations.get(0).getRouteId(); // Giả định tất cả cùng 1 Route
 
-        List<StationDTO> stationDTOs = routeStations.stream()
-                .sorted((r1, r2) -> Integer.compare(r1.getOrderStation(), r2.getOrderStation()))
-                .map(StationDTO::fromEntity)
-                .collect(Collectors.toList());
+//        List<StationDTO> stationDTOs = routeStations.stream()
+//                .sorted((r1, r2) -> Integer.compare(r1.getOrderStation(), r2.getOrderStation()))
+//                .map(StationDTO::fromEntity)
+//                .collect(Collectors.toList());
+        List<StationDTO> stationDTOs = routeStations.stream().map(StationDTO::fromEntity).collect(Collectors.toList());
 
         return new RouteDTO(
                 route.getId(),
