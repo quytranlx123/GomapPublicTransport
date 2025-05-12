@@ -17,4 +17,6 @@ public interface NotificationService {
 
     void save(Notification notification);
 
+    Notification getNotificationById(Integer id);
+
 }
