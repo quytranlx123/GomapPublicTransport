@@ -4,8 +4,10 @@
  */
 package com.quinhat.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
+import java.util.Set;
 
 /**
  *
@@ -18,13 +20,37 @@ public class StationDTO {
     private String address;
     private float latitude;
     private float longitude;
-    private Integer orderStation; // mới
-    private Float distance;       // mới
-    private Integer duration;     // mới
-    private Integer routeId;      // Trường routeId
-    private String routeName;     // Trường routeName
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer orderStation;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Float distance;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer duration;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer routeId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String routeName;
 
     public StationDTO() {
+    }
+
+    public StationDTO(Station station, Set<String> fields) {
+        if (fields.contains("id")) {
+            this.id = station.getId();
+        }
+        if (fields.contains("name")) {
+            this.name = station.getName();
+        }
+        if (fields.contains("address")) {
+            this.address = station.getAddress();
+        }
+        if (fields.contains("latitude")) {
+            this.latitude = station.getLatitude();
+        }
+        if (fields.contains("longitude")) {
+            this.longitude = station.getLongitude();
+        }
+
     }
 
     public StationDTO(Integer id, String name, String address, float latitude, float longitude, Integer orderStation, Float distance, Integer duration, Integer routeId, String routeName) {
@@ -36,8 +62,8 @@ public class StationDTO {
         this.orderStation = orderStation;
         this.distance = distance;
         this.duration = duration;
-        this.routeId = routeId;     // Thêm routeId
-        this.routeName = routeName; // Thêm routeName
+        this.routeId = routeId;
+        this.routeName = routeName;
     }
 
     public static StationDTO fromEntity(RouteStation routeStation) {
@@ -50,19 +76,9 @@ public class StationDTO {
                 routeStation.getOrderStation(),
                 routeStation.getDistance(),
                 routeStation.getDuration(),
-                routeStation.getRouteId().getId(), // Thêm routeId
+                routeStation.getRouteId().getId(),
                 routeStation.getRouteId().getName()
         );
-    }
-
-    public static StationDTO fromStation(Station s) {
-        StationDTO dto = new StationDTO();
-        dto.setId(s.getId());
-        dto.setName(s.getName());
-        dto.setAddress(s.getAddress());
-        dto.setLatitude(s.getLatitude());
-        dto.setLongitude(s.getLongitude());
-        return dto;
     }
 
     // Getter Setter
