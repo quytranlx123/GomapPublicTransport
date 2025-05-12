@@ -20,7 +20,7 @@ public interface VehicleService {
     void save(Vehicle vehicle);
     //Qui
 
-    List<Vehicle> getVehiclesByRouteId(int routeId);
+    List<Vehicle> getVehiclesByRouteId(int routeId, int page, int pageSize);
 
     long countVehiclesByRouteid(int routeId);
 
