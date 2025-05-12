@@ -58,8 +58,14 @@ public class SpringSecurityConfigs {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                .requestMatchers("/api/users", "/api/cart", "/api/traffic-reports/**").permitAll()
-                .requestMatchers("/api/users/change-password").authenticated()
+                .requestMatchers("/ws/**", "/ws/info/**").permitAll()
+                .requestMatchers("/api/users/**", "/api/schedules/**").permitAll()
+                .requestMatchers("/api/users/change-password", "/api/traffic-reports/**",
+                        "/api/user-notifications/**", "/api/favorite-routes/**").authenticated()
+                .requestMatchers("/api/routes/**").permitAll()
+                .requestMatchers("/api/stations/**").permitAll()
+                .requestMatchers("/api/route-stations/**").permitAll()
+                .requestMatchers("/api/vehicles/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated())
