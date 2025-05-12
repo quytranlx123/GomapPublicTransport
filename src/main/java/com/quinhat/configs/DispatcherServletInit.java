@@ -28,7 +28,9 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
         return new Class[]{
             ThymeleafConfig.class,
             HibernateConfigs.class,
-            SpringSecurityConfigs.class
+            SpringSecurityConfigs.class,
+            WebSocketConfig.class,
+            FirebaseInitializer.class
         };
     }
 
@@ -46,7 +48,7 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
 
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
-        String location = "/tmp";
+        String location = "/";
         long maxFileSize = 5242880; // 5MB
         long maxRequestSize = 20971520; // 20MB
         int fileSizeThreshold = 0;
