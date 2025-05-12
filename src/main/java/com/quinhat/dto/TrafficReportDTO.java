@@ -1,6 +1,8 @@
 package com.quinhat.dto;
 
+import com.quinhat.pojo.TrafficReport;
 import java.util.Date;
+import java.util.Set;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -36,6 +38,21 @@ public class TrafficReportDTO {
         this.createdAt = createdAt;
         this.isVerified = isVerified;
         this.user = user;
+    }
+
+    public static TrafficReportDTO fromEntity(TrafficReport trafficReport) {
+        return new TrafficReportDTO(
+                trafficReport.getId(),
+                trafficReport.getTitle(),
+                trafficReport.getAddress(),
+                trafficReport.getLatitude(),
+                trafficReport.getLongitude(),
+                trafficReport.getImage(),
+                trafficReport.getDescription(),
+                trafficReport.getCreatedAt(),
+                trafficReport.getIsVerified(),
+                null
+        );
     }
 
     // Getters & Setters
