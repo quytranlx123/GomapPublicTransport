@@ -4,6 +4,8 @@
  */
 package com.quinhat.dto;
 
+import com.quinhat.pojo.Vehicle;
+
 /**
  *
  * @author ASUS
@@ -33,6 +35,19 @@ public class VehicleDTO {
         this.latitude = latitude;
         this.longitude = longitude;
         this.status = status;
+    }
+
+    public static VehicleDTO fromEntity(Vehicle vehicle) {
+        return new VehicleDTO(
+                vehicle.getId(),
+                vehicle.getLicensePlate(),
+                vehicle.getVehicleType(),
+                vehicle.getDriver(),
+                vehicle.getCapacity(),
+                vehicle.getLatitude(),
+                vehicle.getLongitude(),
+                vehicle.getStatus()
+        );
     }
 
     /**
