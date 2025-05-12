@@ -22,4 +22,7 @@ public interface VehicleService {
 
     List<Vehicle> getVehiclesByRouteId(int routeId);
 
+    long countVehiclesByRouteid(int routeId);
+
+
 }
