@@ -37,12 +37,6 @@ public class ApiRouteController {
     @Autowired
     private RouteService routeService;
 
-//    @GetMapping("/getRoutes")
-//    public ResponseEntity<ApiResponse<List<Route>>> getRoutes(@RequestParam Map<String, String> params) {
-//        List<Route> routes = routeService.getRoutesByStartAndEndPoints(params);
-//        ApiResponse<List<Route>> response = new ApiResponse<>(routes, HttpStatus.OK.value());
-//        return ResponseEntity.ok(response);
-//    }
     @PostMapping("/createRoute")
     public ResponseEntity<ApiResponse<Route>> createRoute(@RequestBody Map<String, String> params) {
         Route createdRoute = routeService.createRoute(params);
