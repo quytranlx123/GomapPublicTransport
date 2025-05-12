@@ -17,4 +17,12 @@ public interface ScheduleService {
 
     void save(Schedule schedule);
 
+    List<Schedule> getSchedulesByRouteId(int routeId, int page, int pageSize);
+
+    long countSchedulesByRouteId(int routeId);
+
+    List<Schedule> getSchedulesByVehicleId(int vehicleId, int page, int pageSize);
+
+    long countSchedulesByVehicleId(int vehicleId);
+
 }
