@@ -8,7 +8,7 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDTO {
 
-    private String id;
+    private Integer id;
     private String username;
     private String fullName;
     private String email;
@@ -17,8 +17,8 @@ public class UserDTO {
     private String avatar;
     private String gender;
 
-    // Constructor đầy đủ
-    public UserDTO(String username, String fullName, String email, String phone, Date birthday, String avatar, String gender) {
+    public UserDTO(Integer id, String username, String fullName, String email, String phone, Date birthday, String avatar, String gender) {
+        this.id = id;
         this.username = username;
         this.fullName = fullName;
         this.email = email;
@@ -29,6 +29,9 @@ public class UserDTO {
     }
 
     public UserDTO(User user, Set<String> fields) {
+        if (fields.contains("id")) {
+            this.id = user.getId();
+        }
         if (fields.contains("username")) {
             this.username = user.getUsername();
         }
@@ -56,14 +59,14 @@ public class UserDTO {
     /**
      * @return the id
      */
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
     /**
      * @param id the id to set
      */
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
