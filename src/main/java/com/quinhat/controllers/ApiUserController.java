@@ -4,32 +4,30 @@
  */
 package com.quinhat.controllers;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 import com.quinhat.dto.ApiResponse;
-import com.quinhat.dto.TrafficReportDTO;
 import com.quinhat.dto.UserDTO;
+import com.quinhat.exception.UsernameAlreadyExistsException;
 import com.quinhat.pojo.User;
 import com.quinhat.services.UserService;
 import com.quinhat.utils.JwtUtils;
 import java.security.Principal;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,10 +43,26 @@ public class ApiUserController {
     @Autowired
     private UserService userDetailsService;
 
-    // api tạo user
     @PostMapping(path = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> create(@RequestParam Map<String, String> params, @RequestParam(value = "avatar") MultipartFile avatar) {
-        return new ResponseEntity<>(this.userDetailsService.addUser(params, avatar), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<?>> create(@RequestParam Map<String, String> params,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatar) {
+        try {
+            User user = userDetailsService.addUser(params, avatar);
+            ApiResponse<User> response = new ApiResponse<>(user, HttpStatus.CREATED.value(), "Tạo tài khoản thành công!");
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (UsernameAlreadyExistsException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ApiResponse<>(null, HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ApiResponse<>(null, HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(null, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Thất bại. Vui lòng thử lại sau!"));
+        }
     }
 
     // api login
@@ -60,11 +74,12 @@ public class ApiUserController {
                 String token = JwtUtils.generateToken(u.getUsername());
                 User userInfo = this.userDetailsService.getUserByUsername(u.getUsername());
 
-                Set<String> fields = Set.of("username", "fullName", "email", "phone", "birthday", "avatar", "gender");
+                Set<String> fields = Set.of("id", "username", "fullName", "email", "phone", "birthday", "avatar", "gender");
                 UserDTO userDto = new UserDTO(userInfo, fields);
 
                 Map<String, Object> result = new HashMap<>();
                 result.put("token", token);
+                result.put("id", userDto.getId());
                 result.put("username", userDto.getUsername());
                 result.put("fullName", userDto.getFullName());
                 result.put("email", userDto.getEmail());
@@ -121,6 +136,60 @@ public class ApiUserController {
             return ResponseEntity.ok("Đổi mật khẩu thành công");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mật khẩu cũ không đúng");
+        }
+    }
+
+    @PostMapping("/users/google-login")
+    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
+        String idToken = body.get("idToken");
+
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            String email = decodedToken.getEmail();
+            String name = decodedToken.getName();
+            String picture = decodedToken.getPicture();
+
+            User user = userDetailsService.getUserByUsername(email);
+            if (user == null) {
+                // tạo user mới
+                user = new User();
+                user.setUsername(email);
+                user.setEmail(email);
+                user.setPhone("0987654321");
+                user.setFullName(name);
+                user.setPassword("");
+                user.setAvatar(picture);
+                user.setUserRole("user");
+                user.setIsActive(true);
+
+                userDetailsService.save(user);
+            }
+
+            // tạo JWT trả về frontend
+            String token = JwtUtils.generateToken(user.getUsername());
+
+            User userInfo = this.userDetailsService.getUserByUsername(user.getUsername());
+
+            Set<String> fields = Set.of("id", "username", "fullName", "email", "phone", "birthday", "avatar", "gender");
+            UserDTO userDto = new UserDTO(userInfo, fields);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            result.put("id", userDto.getId());
+            result.put("username", userDto.getUsername());
+            result.put("fullName", userDto.getFullName());
+            result.put("email", userDto.getEmail());
+            result.put("phone", userDto.getPhone());
+            result.put("birthday", userDto.getBirthday());
+            result.put("avatar", userDto.getAvatar());
+            result.put("gender", userDto.getGender());
+
+            return ResponseEntity.ok().body(result);
+
+        } catch (FirebaseAuthException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Lỗi token");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi server");
         }
     }
 
