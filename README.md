@@ -1,3 +1,5 @@
+🔄 Tài liệu đang trong quá trình cập nhật (11/6/2025)
+
 # GomapPublicTransport 🚍
 
 Ứng dụng web Java hiển thị và quản lý thông tin giao thông công cộng trên bản đồ, xây dựng bằng **Spring MVC** và **Maven** trên NetBeans.
