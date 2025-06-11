@@ -30,9 +30,9 @@
 
 - Hiển thị bản đồ với các tuyến xe buýt và điểm dừng.
 - Quản lý thông tin tuyến:
-  - Thêm / sửa / xóa tuyến.
+- Thêm / sửa / xóa tuyến.
 - Quản lý điểm dừng:
-  - Thêm / sửa / xóa điểm dừng.
+- Thêm / sửa / xóa điểm dừng.
 - Tự động load dữ liệu tuyến & điểm dừng từ database.
 - Hiển thị trực quan qua Google Maps.
 
@@ -40,14 +40,14 @@
 
 ## ⚙️ Công nghệ
 
-| Thành phần     | Công nghệ sử dụng         |
-|----------------|---------------------------|
-| Backend        | Java, Spring MVC          |
-| Frontend       | JSP, HTML, JavaScript     |
-| CSDL           | MySQL                     |
-| Build Tool     | Apache Maven              |
-| API bản đồ     | Google Maps JavaScript API|
-| IDE            | NetBeans                  |
+| Thành phần     |         Công nghệ sử dụng               |
+|----------------|-----------------------------------------|
+| Backend        | Java, Spring MVC                        |
+| Frontend       | Thymeleaf, HTML, JavaScript, React      |
+| CSDL           | MySQL                                   |
+| Build Tool     | Apache Maven                            |
+| API bản đồ     | Mapbox Maps JavaScript API              |    
+| IDE            | NetBeans(Backend), Visual Code(Frontend)|
 
 ---
 
