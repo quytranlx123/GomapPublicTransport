@@ -4,6 +4,9 @@
  */
 package com.quinhat.repositories.impl;
 
+import com.quinhat.dto.AdminTrafficReportDTO;
+import com.quinhat.mapper.AdminTrafficReportMapper;
+import com.quinhat.pojo.Station;
 import com.quinhat.pojo.TrafficReport;
 import com.quinhat.repositories.TrafficReportRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.hibernate.Session;
+import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -33,7 +37,7 @@ public class TrafficReportRepositoryImpl implements TrafficReportRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<TrafficReport> getTrafficReports(Map<String, String> params) {
+    public List<TrafficReport> getTrafficReports(Map<String, String> params, int page, int pageSize) {
         Session s = this.factory.getObject().getCurrentSession();
         CriteriaBuilder b = s.getCriteriaBuilder();
         CriteriaQuery<TrafficReport> q = b.createQuery(TrafficReport.class);
@@ -43,28 +47,31 @@ public class TrafficReportRepositoryImpl implements TrafficReportRepository {
         if (params != null) {
             List<Predicate> predicates = new ArrayList<>();
 
-//            String kw = params.get("kw");
-//            if (kw != null && !kw.isEmpty()) {
-//                predicates.add(b.like(root.get("title"), String.format("%%%s%%", kw)));
-//            }
             String userId = params.get("userId");
             if (userId != null && !userId.isEmpty()) {
                 predicates.add(b.equal(root.get("userId").as(Integer.class),
                         userId));
             }
 
+            String type = params.get("type");
+            if (type != null && !type.isEmpty()) {
+                try {
+                    TrafficReport.ReportType enumType = TrafficReport.ReportType.valueOf(type.toLowerCase());
+                    predicates.add(b.equal(root.get("type"), enumType));
+                } catch (IllegalArgumentException e) {
+                    // Nếu type không hợp lệ thì không lọc theo type
+                    System.out.println("Invalid ReportType: " + type);
+                }
+            }
+
             q.where(predicates.toArray(Predicate[]::new));
         }
 
+        q.orderBy(b.desc(root.get("createdAt")));
+
         Query query = s.createQuery(q);
-
-        if (params != null && params.containsKey("page")) {
-            int page = Integer.parseInt(params.getOrDefault("page", "1"));
-            int start = (page - 1) * PAGE_SIZE;
-
-            query.setFirstResult(start);
-            query.setMaxResults(PAGE_SIZE);
-        }
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
 
         return query.getResultList();
     }
@@ -99,19 +106,121 @@ public class TrafficReportRepositoryImpl implements TrafficReportRepository {
     }
 
     @Override
-    public List<TrafficReport> getAllTrafficReports() {
+    public List<AdminTrafficReportDTO> getAllTrafficReports() {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.createQuery("FROM TrafficReport", TrafficReport.class).getResultList();
+        List<TrafficReport> trafficReports = s
+                .createQuery("FROM TrafficReport tr ORDER BY tr.isVerified DESC", TrafficReport.class)
+                .getResultList();
+
+        return trafficReports.stream()
+                .map(AdminTrafficReportMapper::toDTO)
+                .toList();
+
     }
 
     @Override
-    public void save(TrafficReport trafficReport) {
+    public void save(AdminTrafficReportDTO dto) {
         Session s = this.factory.getObject().getCurrentSession();
-        if (trafficReport.getId() == null) {
-            s.persist(trafficReport);
+        if (dto.getId() == null) {
+            s.persist(dto);
         } else {
-            s.merge(trafficReport);
+            s.merge(dto);
         }
     }
 
+    @Override
+    public List<Object[]> countTrafficReportsByMonth(int month) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = """
+        SELECT tr.isVerified, COUNT(tr)
+        FROM TrafficReport tr
+        WHERE MONTH(tr.createdAt) = :month
+        GROUP BY tr.isVerified
+        """;
+
+        Query<Object[]> query = s.createQuery(hql, Object[].class);
+        query.setParameter("month", month);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        Session session = this.factory.getObject().getCurrentSession();
+        MutationQuery query = session.createMutationQuery("DELETE FROM TrafficReport u WHERE u.id IN :ids");
+        query.setParameter("ids", ids);
+        query.executeUpdate();
+    }
+
+    @Override
+    public long countTrafficReportsByUserId(int userId, String type) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = "SELECT COUNT(tr) FROM TrafficReport tr WHERE tr.userId.id = :userId";
+
+        boolean hasValidType = false;
+        TrafficReport.ReportType enumType = null;
+
+        if (type != null && !type.isEmpty()) {
+            try {
+                enumType = TrafficReport.ReportType.valueOf(type.toLowerCase());
+                hql += " AND tr.type = :type";
+                hasValidType = true;
+            } catch (IllegalArgumentException e) {
+                // Không thêm điều kiện type nếu không hợp lệ
+                System.out.println("Invalid ReportType: " + type);
+            }
+        }
+
+        Query<Long> query = s.createQuery(hql, Long.class);
+        query.setParameter("userId", userId);
+
+        if (hasValidType) {
+            query.setParameter("type", enumType);
+        }
+
+        return query.getSingleResult();
+    }
+
+    @Override
+    public List<AdminTrafficReportDTO> getTrafficReportsPaginated(int page, int size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        List<TrafficReport> list = s.createQuery("FROM TrafficReport t", TrafficReport.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+        return list.stream().map(AdminTrafficReportMapper::toDTO).toList();
+    }
+
+    @Override
+    public long countTrafficReports() {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("SELECT COUNT(t.id) FROM TrafficReport t", Long.class).getSingleResult();
+    }
+
+    @Override
+    public void update(TrafficReport t) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.merge(t);
+    }
+
+    @Override
+    public TrafficReport findById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(TrafficReport.class, id);
+    }
+
+    @Override
+    public List<TrafficReport> getVerifiedReports() {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        String hql = """
+        FROM TrafficReport tr
+        WHERE tr.type = 'report' AND tr.isVerified = true
+        """;
+
+        Query<TrafficReport> query = s.createQuery(hql, TrafficReport.class);
+        return query.getResultList();
+    }
 }

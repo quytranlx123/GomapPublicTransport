@@ -4,6 +4,7 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminUserDTO;
 import com.quinhat.pojo.User;
 import java.util.List;
 import java.util.Map;
@@ -13,23 +14,36 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  *
  * @author admin
-*/
+ */
 public interface UserService extends UserDetailsService {
-    
-    //Qui
-    void save(User user);
 
-    void deleteUser(int id);
-
-    List<User> getAllUsers();
-    
     //Qui
+    void save(AdminUserDTO dto);
+
+    List<AdminUserDTO> getAllUsers();
+
+    void delete(List<Integer> ids);
+
+    List<AdminUserDTO> getUsersPaginated(int page, int size);
+
+    long countUsers();
+
+    User findById(int id);
+
+    AdminUserDTO update(AdminUserDTO dto, MultipartFile newAvatarFile);
+
+    //Qui
+    User addUser(Map<String, String> params, MultipartFile avatar);
 
     User getUserByUsername(String username);
 
-    User addUser(Map<String, String> params, MultipartFile avatar);
-
     boolean authenticate(String username, String password);
+
+    User getUserByEmail(String email);
+
+    void updatePassword(User user, String newPassword);
+
+    boolean resetPasswordAndSendEmail(String email);
 
     User updateUser(String username, Map<String, String> params, MultipartFile avatar);
 

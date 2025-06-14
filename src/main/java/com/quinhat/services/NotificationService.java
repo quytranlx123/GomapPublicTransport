@@ -4,6 +4,7 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminNotificationDTO;
 import com.quinhat.pojo.Notification;
 import java.util.List;
 
@@ -13,10 +14,19 @@ import java.util.List;
  */
 public interface NotificationService {
 
-    public List<Notification> getAllNotifications();
+    public List<AdminNotificationDTO> getAllNotifications();
 
-    void save(Notification notification);
+    void save(AdminNotificationDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminNotificationDTO> getNotificationsPaginated(int page, int size);
+
+    long countNotifications();
+
+    Notification findById(int id);
+
+    AdminNotificationDTO update(AdminNotificationDTO dto);
 
     Notification getNotificationById(Integer id);
-
 }

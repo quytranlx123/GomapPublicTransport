@@ -1,0 +1,128 @@
+<!--user-tab.html-->
+<div th:fragment="user-tab">
+    <div class="tab-pane active" id="users" role="tabpanel">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-people-fill"></i> Quản Lý Người Dùng
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedUsers" title="Xóa người dùng đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchUserButton" title="Tìm kiếm người dùng">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng người dùng -->
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle" data-type="user">
+                <thead class="table-dark text-center t-head">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllUsers" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Họ Tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Tài khoản</th>
+                        <th>Mật khẩu</th>
+                        <th>Vai trò</th>
+                        <th>Giới tính</th>
+                        <th>Ngày sinh</th>
+                        <th>Avatar</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-center text-nowrap" style="width: 1%;">Hành động</th>
+                    </tr>
+                </thead> 
+                <tbody id="userTableBody" class="text-center"></tbody>
+            </table>
+            <ul id="userPagination" class="pagination justify-content-center mt-3"></ul>
+        </div>
+
+        <!-- Nhập số lượng form -->
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <!-- Bên trái -->
+                <div>
+                    <i class="bi bi-person-plus-fill"></i> Thêm Người Dùng
+                </div>
+
+                <!-- Bên phải -->
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeUserCount(-1)">-</button>
+                    <input type="number" id="userCount" class="form-control form-control-sm compact-input" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeUserCount(1)">+</button>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="generateUserFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+                <!-- Form tổng chứa nhiều user -->
+                <form method="post" action="dashboard/users/save" enctype="multipart/form-data">
+                    <div id="userFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Thêm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <template id="userFormTemplate">
+            <div class="user-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Người dùng #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" name="fullName" placeholder="Họ và tên" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="email" class="form-control" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" name="phone" placeholder="Số điện thoại" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="text" class="form-control" name="username" placeholder="Tên tài khoản" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="password" class="form-control" name="password" placeholder="Mật khẩu" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <select class="form-control user-role-select" name="userRole" required>
+                            <option value="">-- Chọn vai trò --</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="USER">User</option>
+                            <option value="OTHER">Khác</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <select class="form-control" name="gender" required>
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="date" class="form-control" name="birthday" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <input type="file" class="form-control" name="avatars" accept="image/*">                                    <!-- cùng tên "avatars" để được gom thành List<MultipartFile> -->
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <select class="form-control" name="isActive" required>
+                            <option value="">-- Chọn trạng thái hoạt động --</option>
+                            <option value="true">Đang hoạt động</option>
+                            <option value="false">Tạm dừng</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

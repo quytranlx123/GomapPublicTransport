@@ -130,5 +130,5 @@ public class UserNotification implements Serializable {
     public String toString() {
         return "com.quinhat.pojo.UserNotification[ id=" + id + " ]";
     }
-    
+
 }

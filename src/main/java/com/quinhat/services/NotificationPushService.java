@@ -5,6 +5,7 @@
 package com.quinhat.services;
 
 import com.quinhat.dto.NotificationDTO;
+import java.util.List;
 
 /**
  *
@@ -13,4 +14,5 @@ import com.quinhat.dto.NotificationDTO;
 public interface NotificationPushService {
 
     void sendNotificationToUser(Integer userId, NotificationDTO notificationDTO);
+
 }

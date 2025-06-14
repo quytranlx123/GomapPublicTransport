@@ -1,0 +1,142 @@
+<div th:fragment="vehicle-tab">
+    <div class="tab-pane" id="vehicles" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-truck"></i> Quản Lý Phương Tiện
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedVehicles" title="Xóa phương tiện đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchVehicleButton" title="Tìm kiếm phương tiện">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllVehicles" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Bảng số</th>
+                        <th>Loại</th>
+                        <th>Tài xế</th>
+                        <th>Sức chứa</th>
+                        <th>Vĩ độ</th>
+                        <th>Kinh độ</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>ID Tuyến</th>
+                        <th>Trạng thái hoạt động</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicleTableBody" class="text-center">
+                    <!--                    <tr th:each="vehicle : ${vehicles}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="vehicle-checkbox" th:value="${vehicle.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${vehicle.id}"></td>
+                                            <td th:text="${vehicle.licensePlate}"></td>
+                                            <td th:text="${vehicle.vehicleType}"></td>
+                                            <td th:text="${vehicle.driver}"></td>
+                                            <td th:text="${vehicle.capacity}"></td>
+                                            <td th:text="${vehicle.latitude}"></td>
+                                            <td th:text="${vehicle.longitude}"></td>
+                                            <td th:text="${vehicle.status}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(vehicle.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td th:text="${vehicle.routeId != null ? vehicle.routeId : 'N/A'}"></td>
+                                            <td th:text="${vehicle.isActive ? 'Đang hoạt động' : 'Không hoạt động'}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn" th:attr="data-id=${vehicle.id}" title="Sửa phương tiện">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn" onclick="deleteVehicle(this)" th:attr="data-id=${vehicle.id}" title="Xóa phương tiện">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="vehiclePagination" class="pagination justify-content-center mt-3"></ul>
+
+        </div>
+
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-truck-flatbed"></i> Thêm Phương Tiện</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeVehicleCount(-1)">-</button>
+                    <input type="number" id="vehicleCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeVehicleCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateVehicleFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <form method="post" action="dashboard/vehicles/save" enctype="multipart/form-data" id="addVehicleForm">
+                    <div id="vehicleFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Phương Tiện</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <template id="vehicleFormTemplate">
+            <div class="vehicle-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Phương Tiện #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Bảng số</label>
+                        <input type="text" class="form-control" name="licensePlate" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Loại phương tiện</label>
+                        <input type="text" class="form-control" name="vehicleType" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Tài xế</label>
+                        <input type="text" class="form-control" name="driver" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Sức chứa</label>
+                        <input type="number" class="form-control" name="capacity" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Vĩ độ</label>
+                        <input type="number" step="0.000001" class="form-control" name="latitude" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Kinh độ</label>
+                        <input type="number" step="0.000001" class="form-control" name="longitude" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Trạng thái</label>
+                        <input type="text" class="form-control" name="status" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Trạng thái hoạt động</label>
+                        <select class="form-control" name="isActive" required>
+                            <option value="">-- Chọn trạng thái --</option>
+                            <option value="true">Đang hoạt động</option>
+                            <option value="false">Không hoạt động</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Tuyến</label>
+                        <select class="form-control" name="routeId" required>
+                            <option value="">-- Chọn tuyến --</option>
+                            <option th:each="route : ${routes}" th:value="${route.id}" th:text="${route.name}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+

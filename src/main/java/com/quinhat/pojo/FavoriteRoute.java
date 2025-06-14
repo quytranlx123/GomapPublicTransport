@@ -17,6 +17,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.UniqueConstraint;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -25,7 +26,10 @@ import java.util.Date;
  * @author ASUS
  */
 @Entity
-@Table(name = "favorite_route")
+@Table(name = "favorite_route",
+        uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"user_id", "route_id"})
+        })
 @NamedQueries({
     @NamedQuery(name = "FavoriteRoute.findAll", query = "SELECT f FROM FavoriteRoute f"),
     @NamedQuery(name = "FavoriteRoute.findById", query = "SELECT f FROM FavoriteRoute f WHERE f.id = :id"),
@@ -44,7 +48,7 @@ public class FavoriteRoute implements Serializable {
     @JoinColumn(name = "route_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private Route routeId;
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     @ManyToOne(optional = false)
     private User userId;
 
@@ -111,5 +115,5 @@ public class FavoriteRoute implements Serializable {
     public String toString() {
         return "com.quinhat.pojo.FavoriteRoute[ id=" + id + " ]";
     }
-    
+
 }

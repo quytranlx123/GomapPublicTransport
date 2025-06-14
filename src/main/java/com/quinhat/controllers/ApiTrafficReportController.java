@@ -4,6 +4,7 @@
  */
 package com.quinhat.controllers;
 
+import com.quinhat.dto.AdminTrafficReportDTO;
 import com.quinhat.dto.ApiResponse;
 import com.quinhat.dto.TrafficReportDTO;
 import com.quinhat.pojo.TrafficReport;
@@ -11,6 +12,7 @@ import com.quinhat.pojo.User;
 import com.quinhat.services.TrafficReportService;
 import com.quinhat.services.UserService;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,20 +43,46 @@ public class ApiTrafficReportController {
     @Autowired
     private UserService userDetailsService;
 
+    @GetMapping("/traffic-reports/all")
+    public ResponseEntity<ApiResponse<List<AdminTrafficReportDTO>>> getAllTrafficReports() {
+
+        List<AdminTrafficReportDTO> trafficReports = trafficReportService.getAllTrafficReports();
+
+        ApiResponse<List<AdminTrafficReportDTO>> response = new ApiResponse<>(
+                trafficReports,
+                HttpStatus.OK.value(),
+                "Lấy danh sách tất cả các phản ánh thành công"
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/traffic-reports")
-    public ResponseEntity<ApiResponse<List<TrafficReportDTO>>> getTrafficReports(Principal principal) {
+    public ResponseEntity<ApiResponse<List<TrafficReportDTO>>> getTrafficReports(
+            Principal principal,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(required = false) String type) {
         String username = principal.getName();
         User userInfo = this.userDetailsService.getUserByUsername(username);
         int userId = userInfo.getId();
 
-        Map<String, String> params = Map.of("userId", String.valueOf(userId));
+        Map<String, String> params = new HashMap<>();
+        params.put("userId", String.valueOf(userId));
 
-        List<TrafficReport> reports = trafficReportService.getTrafficReports(params);
+        if (type != null && !type.isEmpty()) {
+            params.put("type", type);
+        }
+
+        List<TrafficReport> reports = trafficReportService.getTrafficReports(params, page, pageSize);
+        long total = this.trafficReportService.countTrafficReportsByUserId(userId, type);
+        Integer totalAsInteger = (int) total;
+
         List<TrafficReportDTO> dtos = reports.stream()
                 .map(TrafficReportDTO::fromEntity)
                 .toList();
 
-        ApiResponse<List<TrafficReportDTO>> response = new ApiResponse<>(dtos, HttpStatus.OK.value());
+        ApiResponse<List<TrafficReportDTO>> response = new ApiResponse<>(dtos, HttpStatus.OK.value(), "Lấy danh sách các phản ánh thành công", page, pageSize, totalAsInteger);
 
         return ResponseEntity.ok(response);
     }
@@ -64,7 +92,7 @@ public class ApiTrafficReportController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrafficReport> create(
             @RequestParam Map<String, String> params,
-            @RequestParam("image") MultipartFile image,
+            @RequestParam(value = "image", required = false) MultipartFile image,
             Principal principal) {
 
         String username = principal.getName();
@@ -97,6 +125,23 @@ public class ApiTrafficReportController {
 
         trafficReportService.deleteTrafficReport(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/traffic-reports/verified")
+    public ResponseEntity<ApiResponse<List<TrafficReportDTO>>> getVerifiedReports() {
+        List<TrafficReport> reports = trafficReportService.getVerifiedReports();
+
+        List<TrafficReportDTO> dtos = reports.stream()
+                .map(TrafficReportDTO::fromEntity)
+                .toList();
+
+        ApiResponse<List<TrafficReportDTO>> response = new ApiResponse<>(
+                dtos,
+                HttpStatus.OK.value(),
+                "Lấy danh sách phản ánh đã xác thực thành công"
+        );
+
+        return ResponseEntity.ok(response);
     }
 
 }

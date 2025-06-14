@@ -1,0 +1,102 @@
+<div th:fragment="notification-tab">
+    <div class="tab-pane" id="notifications" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-bell"></i> Quản Lý Thông Báo
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedNotifications" title="Xóa thông báo đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchNotificationButton" title="Tìm kiếm thông báo">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllNotifications" title="Chọn tất cả"></th>
+                        <th>Mã số</th>
+                        <th>Sự kiện</th>
+                        <th>Nội dung</th>
+                        <th>Loại thông báo</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="notificationTableBody" class="text-center">
+                    <!--                    <tr th:each="notification : ${notifications}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="notification-checkbox" th:value="${notification.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${notification.id}"></td>
+                                            <td th:text="${notification.title}"></td>
+                                            <td th:text="${notification.message}"></td>
+                                            <td th:text="${notification.messageType}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(notification.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn" th:attr="data-id=${notification.id}" title="Sửa thông báo">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn" onclick="deleteNotification(this)" th:attr="data-id=${notification.id}" title="Xóa thông báo">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="notificationPagination" class="pagination justify-content-center mt-3"></ul>
+
+        </div>
+
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-bell-fill"></i> Thêm Thông Báo</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeNotificationCount(-1)">-</button>
+                    <input type="number" id="notificationCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeNotificationCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateNotificationFormsFromInput()">Xác Nhận</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" action="dashboard/notifications/save" enctype="multipart/form-data" id="addNotificationForm">
+                    <div id="notificationFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Thông Báo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <template id="notificationFormTemplate">
+            <div class="notification-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Thông Báo #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Sự kiện</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Loại thông báo</label>
+                        <select class="form-control" name="messageType" required>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="INFO">Thông tin</option>
+                            <option value="WARNING">Cảnh báo</option>
+                            <option value="ALERT">Thông báo quan trọng</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Nội dung</label>
+                        <textarea class="form-control" name="message" rows="3" required></textarea>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

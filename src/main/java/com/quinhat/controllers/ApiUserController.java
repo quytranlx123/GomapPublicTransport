@@ -8,9 +8,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
+import com.quinhat.dto.AdminUserDTO;
 import com.quinhat.dto.ApiResponse;
 import com.quinhat.dto.UserDTO;
 import com.quinhat.exception.UsernameAlreadyExistsException;
+import com.quinhat.mapper.AdminUserMapper;
 import com.quinhat.pojo.User;
 import com.quinhat.services.UserService;
 import com.quinhat.utils.JwtUtils;
@@ -162,7 +164,9 @@ public class ApiUserController {
                 user.setUserRole("user");
                 user.setIsActive(true);
 
-                userDetailsService.save(user);
+                AdminUserDTO googleUser = AdminUserMapper.toDTO(user);
+
+                userDetailsService.save(googleUser);
             }
 
             // tạo JWT trả về frontend
@@ -190,6 +194,23 @@ public class ApiUserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Lỗi token");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi server");
+        }
+
+    }
+
+    @PostMapping("/users/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String username = body.get("username");
+
+        if (username == null || username.isEmpty()) {
+            return ResponseEntity.badRequest().body("Vui lòng cung cấp tên đăng nhập");
+        }
+
+        boolean result = this.userDetailsService.resetPasswordAndSendEmail(username);
+        if (result) {
+            return ResponseEntity.ok("Mật khẩu mới đã được gửi tới email của bạn");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng hoặc email không hợp lệ");
         }
     }
 

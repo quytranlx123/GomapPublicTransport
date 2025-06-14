@@ -4,6 +4,7 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminScheduleDTO;
 import com.quinhat.pojo.Schedule;
 import java.util.List;
 
@@ -13,9 +14,19 @@ import java.util.List;
  */
 public interface ScheduleService {
 
-    public List<Schedule> getAllSchedules();
+    public List<AdminScheduleDTO> getAllSchedules();
 
-    void save(Schedule schedule);
+    void save(AdminScheduleDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminScheduleDTO> getSchedulesPaginated(int page, int size);
+
+    long countSchedules();
+
+    Schedule findById(int id);
+
+    AdminScheduleDTO update(AdminScheduleDTO dto);
 
     List<Schedule> getSchedulesByRouteId(int routeId, int page, int pageSize);
 

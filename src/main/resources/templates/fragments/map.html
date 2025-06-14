@@ -1,0 +1,542 @@
+<div th:fragment="map">
+    <div id="map" style="width: 100%; height: 500px; position: relative;">
+        <!-- Nút nổi trên bản đồ -->
+        <button id="btnCurrentLocation"
+                style="position: absolute;
+                z-index: 999;
+                bottom: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                cursor: pointer;">
+            Vị trí hiện tại
+        </button>
+        <div id="coordinateBox" style="
+             position: absolute;
+             bottom: 10px;
+             right: 10px;
+             z-index: 2;
+             background: white;
+             padding: 8px 10px;
+             border: 1px solid #ccc;
+             border-radius: 6px;
+             font-size: 14px;
+             display: none;
+             max-width: 280px;
+             ">
+            <div>
+                <span id="coordinateText">Lat: --, Lng: --</span> 
+                <button id="copyCoords" style="margin-left: 8px; padding: 2px 6px;">📋</button>
+            </div>
+            <div style="margin-top: 6px;">
+                <span id="addressText">Địa chỉ: --</span> 
+                <button id="copyAddress" style="margin-left: 8px; padding: 2px 6px;">📋</button>
+            </div>
+            <span id="countdown" style="margin-left: 0; color: gray; display: block; margin-top: 6px;">(10s)</span>
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const stations = /*[[${stations}]]*/ [];
+        const vehicles = /*[[${vehicles}]]*/ [];
+        /*]]>*/
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoicXV5dHJhbmx4MTIzIiwiYSI6ImNtYTdxYnNsZTBpaXIyam9iNTRzNDN3YWIifQ.zWSkoAn4LPl8DzJL4fLmCw';
+
+        const stationsGeoJSON = {
+            type: 'FeatureCollection',
+            features: stations.map(station => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [parseFloat(station.longitude), parseFloat(station.latitude)]
+                    },
+                    properties: {
+                        description: station.name,
+                        address: station.address  // thêm address
+                    }
+                }))
+        };
+
+        const vehiclesGeoJSON = {
+            type: 'FeatureCollection',
+            features: vehicles.map(vehicle => ({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [parseFloat(vehicle.longitude), parseFloat(vehicle.latitude)]
+                    },
+                    properties: {
+                        description: vehicle.licensePlate,
+                        driver: vehicle.driver  // thêm driver
+                    }
+                }))
+        };
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [106.660172, 10.762622],
+            zoom: 12
+        }
+        );
+
+        // Thêm ô tìm kiếm
+        const geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            mapboxgl: mapboxgl,
+            placeholder: 'Nhập địa chỉ điểm đi hoặc điểm đến',
+            marker: false
+        });
+        map.addControl(geocoder);
+
+        let searchMarker = null;
+        geocoder.on('result', function (e) {
+            const coordinates = e.result.geometry.coordinates;
+            const placeName = e.result.place_name;
+
+            if (searchMarker)
+                searchMarker.remove();
+
+            searchMarker = new mapboxgl.Marker({color: 'red'})
+                    .setLngLat(coordinates)
+                    .setPopup(new mapboxgl.Popup().setText(placeName))
+                    .addTo(map);
+
+            searchMarker.getElement().addEventListener('click', () => {
+                // Lấy tọa độ marker
+                const lngLat = marker.getLngLat();
+                showCoordinates(lngLat.lat, lngLat.lng);
+            });
+
+
+            map.flyTo({center: coordinates, zoom: 14});
+            showCoordinates(coordinates[1], coordinates[0]);
+        });
+
+        // Tải icon và dữ liệu
+        map.on('load', () => {
+            map.doubleClickZoom.disable();
+            map.loadImage('/gomap/images/bus-station.png', (error, image) => {
+                if (error)
+                    throw error;
+                map.addImage('bus-station-icon', image);
+                map.addSource('stations', {
+                    type: 'geojson',
+                    data: stationsGeoJSON,
+                    cluster: true,
+                    clusterMaxZoom: 14,
+                    clusterRadius: 50
+                });
+
+                map.addLayer({
+                    id: 'clusters',
+                    type: 'symbol',
+                    source: 'stations',
+                    filter: ['has', 'point_count'],
+                    layout: {
+                        'icon-image': 'bus-station-icon',
+                        'icon-size': 1,
+                        'text-field': '{point_count_abbreviated}',
+                        'text-size': 14,
+                        'text-offset': [0, 0.5],
+                        'text-anchor': 'top'
+                    },
+                    paint: {'text-color': '#fff'}
+                });
+
+                map.addLayer({
+                    id: 'stations-layer',
+                    type: 'symbol',
+                    source: 'stations',
+                    filter: ['!', ['has', 'point_count']],
+                    layout: {
+                        'icon-image': 'bus-station-icon',
+                        'icon-size': 1,
+                        'icon-allow-overlap': true
+                    }
+                });
+            });
+
+            map.loadImage('/gomap/images/bus.png', (error, image) => {
+                if (error)
+                    throw error;
+                map.addImage('bus-icon', image);
+                map.addSource('vehicles', {
+                    type: 'geojson',
+                    data: vehiclesGeoJSON
+                });
+
+                map.addLayer({
+                    id: 'vehicles-layer',
+                    type: 'symbol',
+                    source: 'vehicles',
+                    layout: {
+                        'icon-image': 'bus-icon',
+                        'icon-size': 1,
+                        'icon-allow-overlap': true
+                    }
+                });
+            });
+        });
+
+        // Lấy vị trí hiện tại
+        let currentLocationMarker = null; // Biến lưu marker hiện tại
+
+        document.getElementById('btnCurrentLocation').addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                console.warn('Trình duyệt không hỗ trợ định vị.');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(position => {
+                const {latitude, longitude} = position.coords;
+
+                // Xóa marker cũ nếu có
+                if (currentLocationMarker) {
+                    currentLocationMarker.remove();
+                }
+
+                // Tạo marker mới
+                currentLocationMarker = new mapboxgl.Marker({color: 'blue'})
+                        .setLngLat([longitude, latitude])
+                        .setPopup(new mapboxgl.Popup().setText('Vị trí hiện tại của bạn'))
+                        .addTo(map)
+                        .togglePopup();
+
+                // Gắn sự kiện click để hiển thị tọa độ
+                currentLocationMarker.getElement().addEventListener('click', () => {
+                    showCoordinates(latitude, longitude);
+                });
+
+                // Di chuyển map đến vị trí
+                map.easeTo({center: [longitude, latitude], zoom: 14, duration: 1000});
+
+                showCoordinates(latitude, longitude);
+            }, error => {
+                console.warn('Không thể lấy vị trí hiện tại: ' + error.message);
+            });
+        });
+
+
+
+        // Di chuyển đến
+        let destinationMarker = null;
+        let btnNavigate = null;
+
+        function removeRouteLayers() {
+            ['route-to-station', 'route-to-vehicle'].forEach(id => {
+                if (map.getLayer(id))
+                    map.removeLayer(id);
+                if (map.getSource(id))
+                    map.removeSource(id);
+            });
+        }
+
+        function haversine(coord1, coord2) {
+            const R = 6371e3;
+            const toRad = deg => deg * Math.PI / 180;
+            const [lon1, lat1] = coord1;
+            const [lon2, lat2] = coord2;
+            const φ1 = toRad(lat1), φ2 = toRad(lat2);
+            const Δφ = toRad(lat2 - lat1);
+            const Δλ = toRad(lon2 - lon1);
+            const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function createNavigateButton(startCoords, description) {
+            if (btnNavigate)
+                btnNavigate.remove();
+
+            btnNavigate = document.createElement('button');
+            btnNavigate.textContent = 'Di chuyển đến';
+            Object.assign(btnNavigate.style, {
+                position: 'absolute',
+                zIndex: 2,
+                top: '60px',
+                left: '10px',
+                background: '#f0c14b',
+                border: '1px solid #a88734',
+                padding: '6px 12px',
+                cursor: 'pointer'
+            });
+            document.getElementById('map').appendChild(btnNavigate);
+
+            btnNavigate.onclick = () => {
+                removeRouteLayers();
+
+                let nearestStation = null, minDistStation = Infinity;
+                for (const f of stationsGeoJSON.features) {
+                    const dist = haversine(startCoords, f.geometry.coordinates);
+                    if (dist < minDistStation) {
+                        minDistStation = dist;
+                        nearestStation = f.geometry.coordinates;
+                    }
+                }
+
+                let nearestVehicle = null, minDistVehicle = Infinity;
+                for (const f of vehiclesGeoJSON.features) {
+                    const dist = haversine(nearestStation, f.geometry.coordinates);
+                    if (dist < minDistVehicle) {
+                        minDistVehicle = dist;
+                        nearestVehicle = f.geometry.coordinates;
+                    }
+                }
+
+                map.addSource('route-to-station', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [startCoords, nearestStation]
+                        }
+                    }
+                });
+
+                map.addLayer({
+                    id: 'route-to-station',
+                    type: 'line',
+                    source: 'route-to-station',
+                    paint: {
+                        'line-color': '#f1c40f',
+                        'line-width': 4
+                    }
+                });
+
+                map.addSource('route-to-vehicle', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [nearestStation, nearestVehicle]
+                        }
+                    }
+                });
+
+                map.addLayer({
+                    id: 'route-to-vehicle',
+                    type: 'line',
+                    source: 'route-to-vehicle',
+                    paint: {
+                        'line-color': '#3498db',
+                        'line-width': 4
+                    }
+                });
+            };
+        }
+
+        map.on('click', (e) => {
+            const feature = e.features?.[0];
+            if (!feature)
+                return;
+
+            const coords = feature.geometry.coordinates;
+            const desc = feature.properties.description;
+
+            createNavigateButton(coords, desc);
+            showCoordinates(coords[1], coords[0]);
+        });
+
+        // Hiển thị và sao chép tọa độ
+        const coordinateBox = document.getElementById('coordinateBox');
+        const coordinateText = document.getElementById('coordinateText');
+        const countdown = document.getElementById('countdown');
+        const copyCoords = document.getElementById('copyCoords');
+        const addressText = document.getElementById('addressText');
+        const copyAddress = document.getElementById('copyAddress');
+
+        async function showCoordinates(lat, lng) {
+            const coordFormatted = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+            coordinateText.textContent = coordFormatted;
+            addressText.textContent = 'Đang lấy địa chỉ...';
+
+            coordinateBox.style.display = 'block';
+
+            // Lấy địa chỉ async
+            const address = await fetchAddress(lat, lng);
+            addressText.textContent = `Địa chỉ: ${address}`;
+
+            let timeLeft = 10;
+            countdown.textContent = `(${timeLeft}s)`;
+
+            if (showCoordinates.countdownInterval) {
+                clearInterval(showCoordinates.countdownInterval);
+            }
+
+            showCoordinates.countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdown.textContent = `(${timeLeft}s)`;
+                if (timeLeft <= 0) {
+                    clearInterval(showCoordinates.countdownInterval);
+                    coordinateBox.style.display = 'none';
+                }
+            }, 1000);
+
+            // Nút copy tọa độ
+            copyCoords.onclick = () => {
+                navigator.clipboard.writeText(`${lat.toFixed(6)}, ${lng.toFixed(6)}`).then(() => {
+                    copyCoords.textContent = '✅';
+                    setTimeout(() => {
+                        copyCoords.textContent = '📋';
+                    }, 1000);
+                });
+            };
+
+            // Nút copy địa chỉ
+            copyAddress.onclick = () => {
+                navigator.clipboard.writeText(address).then(() => {
+                    copyAddress.textContent = '✅';
+                    setTimeout(() => {
+                        copyAddress.textContent = '📋';
+                    }, 1000);
+                });
+            };
+
+            clearTimeout(showCoordinates.hideTimeout);
+            showCoordinates.hideTimeout = setTimeout(() => {
+                coordinateBox.style.display = 'none';
+                clearInterval(showCoordinates.countdownInterval);
+            }, 10000);
+        }
+
+
+
+        // Sự kiện click cho trạm xe buýt
+        map.on('click', 'stations-layer', function (e) {
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const description = e.features[0].properties.description;
+            const address = e.features[0].properties.address;
+
+            new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(`<strong>${description}</strong><br/>${address}`)
+                    .addTo(map);
+
+            createNavigateButton(coordinates, description);
+            showCoordinates(coordinates[1], coordinates[0]);
+        });
+
+
+
+// Sự kiện click cho xe buýt
+        map.on('click', 'vehicles-layer', function (e) {
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const description = e.features[0].properties.description;
+            const driver = e.features[0].properties.driver;
+
+            new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(`<strong>${description}</strong><br/>Tài xế: ${driver}`)
+                    .addTo(map);
+
+            createNavigateButton(coordinates, description);
+            showCoordinates(coordinates[1], coordinates[0]);
+        });
+
+
+        map.on('mouseenter', 'stations-layer', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'stations-layer', () => {
+            map.getCanvas().style.cursor = '';
+        });
+
+        map.on('mouseenter', 'vehicles-layer', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'vehicles-layer', () => {
+            map.getCanvas().style.cursor = '';
+        });
+        map.on('click', 'clusters', function (e) {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['clusters']
+            });
+            const clusterId = features[0].properties.cluster_id;
+            map.getSource('stations').getClusterExpansionZoom(clusterId, function (err, zoom) {
+                if (err)
+                    return;
+
+                map.easeTo({
+                    center: features[0].geometry.coordinates,
+                    zoom: zoom
+                });
+            });
+        });
+
+//        double click
+        let doubleClickMarker = null;
+        let lastLatLng = null;
+
+        map.on('dblclick', function (e) {
+            const {lng, lat} = e.lngLat;
+
+            // Xoá marker cũ nếu có
+            if (doubleClickMarker) {
+                doubleClickMarker.remove();
+            }
+
+            // Tạo marker mới ở vị trí click
+            doubleClickMarker = new mapboxgl.Marker({color: 'green'})
+                    .setLngLat([lng, lat])
+                    .addTo(map);
+
+            // Lưu lại vị trí để sử dụng lại khi click marker
+            lastLatLng = {lat, lng};
+
+            // Hiển thị tọa độ ngay khi double click
+            showCoordinates(lat, lng);
+
+            // Lấy địa chỉ từ tọa độ và tạo popup
+            getAddressFromCoordinates(lat, lng)
+                    .then(address => {
+                        doubleClickMarker.setPopup(new mapboxgl.Popup().setText(address)).togglePopup();
+                    })
+                    .catch(() => {
+                        doubleClickMarker.setPopup(new mapboxgl.Popup().setText('Không thể lấy địa chỉ')).togglePopup();
+                    });
+
+            // Thêm sự kiện click vào marker
+            doubleClickMarker.getElement().addEventListener('click', () => {
+                if (!lastLatLng)
+                    return;
+
+                // Hiển thị lại tọa độ
+                showCoordinates(lastLatLng.lat, lastLatLng.lng);
+
+                // Lấy lại địa chỉ rồi hiển thị popup
+                getAddressFromCoordinates(lastLatLng.lat, lastLatLng.lng)
+                        .then(address => {
+                            doubleClickMarker.setPopup(new mapboxgl.Popup().setText(address)).togglePopup();
+
+                        })
+                        .catch(() => {
+                            doubleClickMarker.setPopup(new mapboxgl.Popup().setText('Không thể lấy địa chỉ')).togglePopup();
+                        });
+            });
+        });
+
+
+        async function fetchAddress(lat, lng) {
+            const accessToken = 'pk.eyJ1IjoicXV5dHJhbmx4MTIzIiwiYSI6ImNtYTdxYnNsZTBpaXIyam9iNTRzNDN3YWIifQ.zWSkoAn4LPl8DzJL4fLmCw';
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.features && data.features.length > 0) {
+                    return data.features[0].place_name;
+                }
+            } catch (e) {
+                console.error('Lỗi lấy địa chỉ:', e);
+            }
+            return 'Không xác định';
+        }
+
+    </script>
+</div>

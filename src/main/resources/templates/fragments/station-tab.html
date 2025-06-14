@@ -1,0 +1,110 @@
+<div th:fragment="station-tab">
+    <div class="tab-pane" id="stations" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-signpost"></i> Quản Lý Trạm Dừng
+            </h3>
+            <div class="d-flex gap-2">
+                <input type="text" id="searchStationInput" placeholder="Tìm kiếm trạm..." class="form-control form-control-sm me-2" />
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchStationButton" title="Tìm kiếm trạm">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedStations" title="Xóa trạm đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng hiển thị trạm dừng -->
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllStations" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Tên trạm</th>
+                        <th>Vĩ độ</th>
+                        <th>Kinh độ</th>
+                        <th>Địa chỉ</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="stationTableBody" class="text-center">
+                    <!--                    <tr th:each="station : ${stations}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="station-checkbox" th:value="${station.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${station.id}"></td>
+                                            <td th:text="${station.name}"></td>
+                                            <td th:text="${station.latitude}"></td>
+                                            <td th:text="${station.longitude}"></td>
+                                            <td th:text="${station.address}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(station.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn" th:attr="data-id=${station.id}" title="Sửa trạm">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                                            th:attr="data-id=${station.id}" 
+                                                            title="Xóa trạm"
+                                                            onclick="deleteStation(this)">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="stationPagination" class="pagination justify-content-center mt-3"></ul>
+        </div> 
+
+        <!-- Thêm nhiều trạm dừng -->
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-person-plus-fill"></i> Thêm Trạm</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeStationCount(-1)">-</button>
+                    <input type="number" id="stationCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeStationCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateStationFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <form method="post" action="dashboard/stations/save" enctype="multipart/form-data">
+                    <div id="stationFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Trạm Dừng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Template form mẫu -->
+        <template id="stationFormTemplate">
+            <div class="station-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Trạm #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Tên trạm</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Địa chỉ</label>
+                        <input type="text" class="form-control" name="address">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Vĩ độ</label>
+                        <input type="text" class="form-control" name="latitude" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Kinh độ</label>
+                        <input type="text" class="form-control" name="longitude" required>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

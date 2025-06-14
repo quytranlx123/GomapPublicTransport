@@ -7,11 +7,17 @@ package com.quinhat.configs;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.quinhat.utils.JwtAuthenticationFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 /**
@@ -58,14 +65,20 @@ public class SpringSecurityConfigs {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                .requestMatchers("/ws/**", "/ws/info/**").permitAll()
-                .requestMatchers("/api/users/**", "/api/schedules/**").permitAll()
+                //                .requestMatchers(
+                //                        "/gomap/images/**", // Cho phép truy cập ảnh không cần đăng nhập
+                //                        "/css/**",
+                //                        "/js/**",
+                //                        "/webjars/**"
+                //                ).permitAll()
+                .requestMatchers("/api/users/**").permitAll()
                 .requestMatchers("/api/users/change-password", "/api/traffic-reports/**",
                         "/api/user-notifications/**", "/api/favorite-routes/**").authenticated()
                 .requestMatchers("/api/routes/**").permitAll()
                 .requestMatchers("/api/stations/**").permitAll()
                 .requestMatchers("/api/route-stations/**").permitAll()
                 .requestMatchers("/api/vehicles/**").permitAll()
+                .requestMatchers("/api/schedules/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/products").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated())
@@ -77,8 +90,15 @@ public class SpringSecurityConfigs {
                 .failureUrl("/admin/dashboard/login?error=true")
                 .permitAll()
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/login").permitAll());
-
+                .logout(logout -> logout
+                .logoutUrl("/admin/dashboard/logout")
+                .logoutSuccessUrl("/admin/dashboard/login?logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
+                ).sessionManagement(session -> session
+                .invalidSessionUrl("/admin/dashboard/login?session=expired"));
         return http.build();
     }
 
@@ -97,5 +117,4 @@ public class SpringSecurityConfigs {
                         "secure", true));
         return cloudinary;
     }
-
 }

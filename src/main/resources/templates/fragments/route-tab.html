@@ -1,0 +1,162 @@
+<div th:fragment="route-tab">
+    <div class="tab-pane" id="routes" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-signpost-split"></i> Quản Lý Tuyến
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedRoutes" title="Xóa tuyến đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchRouteButton" title="Tìm kiếm tuyến">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bảng quản lý tuyến -->
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllRoutes" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Tên tuyến</th>
+                        <th>Điểm bắt đầu</th>
+                        <th>Điểm kết thúc</th>
+                        <th>Trạng thái</th>
+                        <th>Tần suất (phút)</th>
+                        <th>Thời gian bắt đầu</th>
+                        <th>Thời gian kết thúc</th>
+                        <th>Khoảng cách (km)</th>
+                        <th>Thời lượng (phút)</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="routeTableBody" class="text-center">
+                    <!--                    <tr th:each="route : ${routes}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="route-checkbox" th:attr="data-id=${route.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${route.id}"></td>
+                                            <td th:text="${route.name}"></td>
+                                            <td th:text="${route.startPoint}"></td>
+                                            <td th:text="${route.endPoint}"></td>
+                                            <td th:text="${route.status}"></td>
+                                            <td th:text="${route.frequency}"></td>
+                                            <td th:text="${#dates.format(route.startTime, 'HH:mm')}"></td>
+                                            <td th:text="${#dates.format(route.endTime, 'HH:mm')}"></td>
+                                            <td th:text="${route.distance}"></td>
+                                            <td th:text="${route.duration}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(route.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td class="text-center no-edit">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                                            th:attr="data-id=${route.id}" title="Sửa tuyến">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                                            onclick="deleteRoute(this)"
+                                                            th:attr="data-id=${route.id}" title="Xóa tuyến">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="routePagination" class="pagination justify-content-center mt-3"></ul>
+
+        </div>
+
+
+        <!-- Nhập số lượng form -->
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <!-- Bên trái -->
+                <div>
+                    <i class="bi bi-person-plus-fill"></i> Thêm Tuyến
+                </div>
+
+                <!-- Bên phải -->
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeRouteCount(-1)">-</button>
+                    <input type="number" id="routeCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeRouteCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateRouteFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+
+            <div class="card-body">
+                <!-- Form tổng chứa nhiều route -->
+                <form method="post" action="dashboard/routes/save" enctype="multipart/form-data">
+                    <div id="routeFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Tuyến</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Template form mẫu -->
+        <template id="routeFormTemplate">
+            <div class="route-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Tuyến #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Tuyến số</label>
+                        <input type="number" class="form-control"
+                               placeholder="Nhập số..." min="1" required oninput="updateRouteNumberHidden(this)">
+
+                        <!-- Thẻ hidden để lưu giá trị Tuyến số + routeNumber -->
+                        <input type="hidden" name="name" class="route-name-hidden" value="Tuyến số 1">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Điểm bắt đầu</label>
+                        <select class="form-select" name="startPoint" required>
+                            <option value="">-- Chọn điểm bắt đầu --</option>
+                            <option th:each="station : ${stations}" th:value="${station.name}" th:text="${station.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Điểm kết thúc</label>
+                        <select class="form-select" name="endPoint" required>
+                            <option value="">-- Chọn điểm kết thúc --</option>
+                            <option th:each="station : ${stations}" th:value="${station.name}" th:text="${station.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Trạng thái</label>
+                        <select class="form-select" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Tần suất (phút)</label>
+                        <input type="number" class="form-control" name="frequency" min="1" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Thời gian bắt đầu</label>
+                        <input type="time" class="form-control" name="startTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Thời gian kết thúc</label>
+                        <input type="time" class="form-control" name="endTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Khoảng cách (Km)</label>
+                        <input type="text" class="form-control" name="distance" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Thời gian di chuyển (phút)</label>
+                        <input type="number" class="form-control" name="duration" min="1" required>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

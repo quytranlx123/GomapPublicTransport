@@ -4,6 +4,8 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminUserDTO;
+import com.quinhat.dto.AdminVehicleDTO;
 import com.quinhat.pojo.User;
 import java.util.List;
 import com.quinhat.pojo.Vehicle;
@@ -15,14 +17,25 @@ import com.quinhat.pojo.Vehicle;
 public interface VehicleService {
 
     //Qui
-    List<Vehicle> getAllVehicles();
+    List<AdminVehicleDTO> getAllVehicles();
 
-    void save(Vehicle vehicle);
+    void save(AdminVehicleDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminVehicleDTO> getVehiclesPaginated(int page, int size);
+
+    long countVehicles();
+
+    Vehicle findById(int id);
+
+    AdminVehicleDTO update(AdminVehicleDTO dto);
+
     //Qui
-
     List<Vehicle> getVehiclesByRouteId(int routeId, int page, int pageSize);
 
     long countVehiclesByRouteid(int routeId);
 
+    long countByIsActive(boolean isActive);
 
 }

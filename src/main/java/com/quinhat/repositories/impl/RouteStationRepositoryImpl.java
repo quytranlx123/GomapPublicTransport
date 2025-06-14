@@ -1,9 +1,14 @@
 package com.quinhat.repositories.impl;
 
+import com.quinhat.dto.AdminRouteStationDTO;
+import com.quinhat.mapper.AdminRouteStationMapper;
+import com.quinhat.pojo.Route;
 import com.quinhat.pojo.RouteStation;
+import com.quinhat.pojo.Station;
 
 import com.quinhat.repositories.RouteStationRepository;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
+import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -26,19 +32,12 @@ public class RouteStationRepositoryImpl implements RouteStationRepository {
     private LocalSessionFactoryBean factory;
 
     @Override
-    public List<RouteStation> getAllRouteStations() {
+    public List<AdminRouteStationDTO> getAllRouteStations() {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.createQuery("FROM RouteStation", RouteStation.class).getResultList();
-    }
-
-    @Override
-    public void save(RouteStation routeStation) {
-        Session s = this.factory.getObject().getCurrentSession();
-        if (routeStation.getId() == null) {
-            s.persist(routeStation);
-        } else {
-            s.merge(routeStation);
-        }
+        List<RouteStation> routeStations = s.createQuery("FROM RouteStation rt", RouteStation.class).getResultList();
+        return routeStations.stream()
+                .map(AdminRouteStationMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -56,134 +55,209 @@ public class RouteStationRepositoryImpl implements RouteStationRepository {
             routeStationsByRoute.computeIfAbsent(routeId, k -> new ArrayList<>()).add(rs);
         }
 
-        // 3. Tìm các tuyến có chứa departure và arrival
+        // 3. Tìm các routeId chứa departure và arrival (tìm những tuyến có chứa trạm đi và trạm đến)
         Set<Integer> departureRoutes = new HashSet<>();
         Set<Integer> arrivalRoutes = new HashSet<>();
 
         for (Map.Entry<Integer, List<RouteStation>> entry : routeStationsByRoute.entrySet()) {
             for (RouteStation rs : entry.getValue()) {
-                if (rs.getStationId().getId() == departureStationId) {
+                int stationId = rs.getStationId().getId();
+                if (stationId == departureStationId) {
                     departureRoutes.add(entry.getKey());
                 }
-                if (rs.getStationId().getId() == arrivalStationId) {
+                if (stationId == arrivalStationId) {
                     arrivalRoutes.add(entry.getKey());
                 }
             }
         }
 
-        List<List<RouteStation>> result = new ArrayList<>();
-
-        // 4. Các tuyến trực tiếp
+        // 4. Nếu có route chứa cả điểm đi và điểm đến (tuyến đi thẳng)
         for (Integer routeId : departureRoutes) {
             if (arrivalRoutes.contains(routeId)) {
-                List<RouteStation> stations = routeStationsByRoute.get(routeId);
-                stations.sort(Comparator.comparingInt(RouteStation::getOrderStation));
+                List<RouteStation> routeStations = routeStationsByRoute.get(routeId)
+                        .stream()
+                        .sorted(Comparator.comparingInt(RouteStation::getOrderStation))
+                        .collect(Collectors.toList());
 
-                int departureIndex = -1, arrivalIndex = -1;
-                for (int i = 0; i < stations.size(); i++) {
-                    if (stations.get(i).getStationId().getId() == departureStationId) {
-                        departureIndex = i;
+                int startIdx = -1, endIdx = -1;
+                for (int i = 0; i < routeStations.size(); i++) {
+                    int stationId = routeStations.get(i).getStationId().getId();
+                    if (stationId == departureStationId) {
+                        startIdx = i;
                     }
-                    if (stations.get(i).getStationId().getId() == arrivalStationId) {
-                        arrivalIndex = i;
+                    if (stationId == arrivalStationId) {
+                        endIdx = i;
                     }
                 }
 
-                // Nếu departure và arrival hợp lệ và theo thứ tự đúng
-                if (departureIndex != -1 && arrivalIndex != -1 && departureIndex <= arrivalIndex) {
-                    List<RouteStation> routeSegment = new ArrayList<>(stations.subList(departureIndex, arrivalIndex + 1));
-                    result.add(routeSegment);
+                if (startIdx != -1 && endIdx != -1 && startIdx != endIdx) {
+                    List<RouteStation> directSegment;
+                    if (startIdx < endIdx) {
+                        // Đi thuận chiều
+                        directSegment = new ArrayList<>(routeStations.subList(startIdx, endIdx + 1));
+                    } else {
+                        // Đi ngược chiều
+                        directSegment = new ArrayList<>();
+                        for (int i = startIdx; i >= endIdx; i--) {
+                            directSegment.add(routeStations.get(i));
+                        }
+                    }
+                    return List.of(directSegment);
                 }
             }
         }
 
-        // 5. Tuyến có chuyển
+        // 5. Nếu không có tuyến đi thẳng, tìm tuyến có trạm trung gian
+        // 5.1. Duyệt từng cặp tuyến (tuyến có trạm đi, tuyến có trạm đến)
+        List<List<RouteStation>> resultList = new ArrayList<>();
         for (Integer depRouteId : departureRoutes) {
+            List<RouteStation> depRouteStations = routeStationsByRoute.get(depRouteId)
+                    .stream()
+                    .sorted(Comparator.comparingInt(RouteStation::getOrderStation))
+                    .collect(Collectors.toList());
+
+            Set<Integer> depStationIds = depRouteStations.stream()
+                    .map(rs -> rs.getStationId().getId())
+                    .collect(Collectors.toSet());
+
             for (Integer arrRouteId : arrivalRoutes) {
-                if (depRouteId.equals(arrRouteId)) {
-                    continue;
-                }
+                List<RouteStation> arrRouteStations = routeStationsByRoute.get(arrRouteId)
+                        .stream()
+                        .sorted(Comparator.comparingInt(RouteStation::getOrderStation))
+                        .collect(Collectors.toList());
 
-                List<RouteStation> depStations = new ArrayList<>(routeStationsByRoute.get(depRouteId));
-                List<RouteStation> arrStations = new ArrayList<>(routeStationsByRoute.get(arrRouteId));
-                depStations.sort(Comparator.comparingInt(RouteStation::getOrderStation));
-                arrStations.sort(Comparator.comparingInt(RouteStation::getOrderStation));
+                Set<Integer> arrStationIds = arrRouteStations.stream()
+                        .map(rs -> rs.getStationId().getId())
+                        .collect(Collectors.toSet());
 
-                Set<Integer> depStationIds = depStations.stream()
-                        .map(rs -> rs.getStationId().getId()).collect(Collectors.toSet());
-                Set<Integer> arrStationIds = arrStations.stream()
-                        .map(rs -> rs.getStationId().getId()).collect(Collectors.toSet());
+                // Tìm trạm trung gian chung
+                Set<Integer> commonStations = new HashSet<>(depStationIds);
+                commonStations.retainAll(arrStationIds);
 
-                depStationIds.retainAll(arrStationIds); // Giao các trạm có thể chuyển
+                for (Integer transferStationId : commonStations) {
+                    // segment 1: departure -> transfer
+                    int depIndex = -1;
+                    int transferInDepIndex = -1;
 
-                for (Integer transferStationId : depStationIds) {
-                    int depIndex = -1, transferIndexDep = -1;
-                    for (int i = 0; i < depStations.size(); i++) {
-                        if (depStations.get(i).getStationId().getId() == departureStationId) {
+                    for (int i = 0; i < depRouteStations.size(); i++) {
+                        int stationId = depRouteStations.get(i).getStationId().getId();
+                        if (stationId == departureStationId) {
                             depIndex = i;
                         }
-                        if (depStations.get(i).getStationId().getId() == transferStationId) {
-                            transferIndexDep = i;
+                        if (stationId == transferStationId) {
+                            transferInDepIndex = i;
                         }
                     }
 
-                    int transferIndexArr = -1, arrIndex = -1;
-                    for (int i = 0; i < arrStations.size(); i++) {
-                        if (arrStations.get(i).getStationId().getId() == transferStationId) {
-                            transferIndexArr = i;
+                    if (depIndex == -1 || transferInDepIndex == -1 || depIndex == transferInDepIndex) {
+                        continue;
+                    }
+
+                    // segment 2: transfer -> arrival
+                    int transferInArrIndex = -1;
+                    int arrIndex = -1;
+
+                    for (int i = 0; i < arrRouteStations.size(); i++) {
+                        int stationId = arrRouteStations.get(i).getStationId().getId();
+                        if (stationId == transferStationId) {
+                            transferInArrIndex = i;
                         }
-                        if (arrStations.get(i).getStationId().getId() == arrivalStationId) {
+                        if (stationId == arrivalStationId) {
                             arrIndex = i;
                         }
                     }
 
-                    if (depIndex != -1 && transferIndexDep != -1 && depIndex <= transferIndexDep
-                            && transferIndexArr != -1 && arrIndex != -1 && transferIndexArr <= arrIndex) {
-
-                        List<RouteStation> firstLeg = new ArrayList<>(depStations.subList(depIndex, transferIndexDep + 1));
-                        List<RouteStation> secondLeg = new ArrayList<>(arrStations.subList(transferIndexArr, arrIndex + 1));
-
-                        List<RouteStation> fullRoute = new ArrayList<>();
-                        fullRoute.addAll(firstLeg);
-                        fullRoute.addAll(secondLeg);
-
-                        result.add(fullRoute);
+                    if (transferInArrIndex == -1 || arrIndex == -1 || transferInArrIndex == arrIndex) {
+                        continue;
                     }
+
+                    // Xây dựng segment1: departure -> transfer (đoạn tuyến từ trạm đi đến trạm trung chuyển)
+                    List<RouteStation> segment1 = new ArrayList<>();
+                    if (depIndex < transferInDepIndex) {
+                        // Đi thuận chiều
+                        for (int i = depIndex; i <= transferInDepIndex; i++) {
+                            segment1.add(depRouteStations.get(i));
+                        }
+                    } else {
+                        // Đi ngược chiều
+                        for (int i = depIndex; i >= transferInDepIndex; i--) {
+                            segment1.add(depRouteStations.get(i));
+                        }
+                    }
+
+                    // Xây dựng segment2: transfer -> arrival (đoạn tuyến từ trạm trung chuyển và trạm đến)
+                    List<RouteStation> segment2 = new ArrayList<>();
+                    if (transferInArrIndex < arrIndex) {
+                        // Đi thuận chiều
+                        for (int i = transferInArrIndex; i <= arrIndex; i++) {
+                            segment2.add(arrRouteStations.get(i));
+                        }
+                    } else {
+                        // Đi ngược chiều
+                        for (int i = transferInArrIndex; i >= arrIndex; i--) {
+                            segment2.add(arrRouteStations.get(i));
+                        }
+                    }
+
+                    resultList.add(segment1);
+                    resultList.add(segment2);
+                    return resultList; // Trả về route 2 chặng đầu tiên tìm thấy
                 }
             }
         }
 
-        // Sắp xếp lại các tuyến để đảm bảo trạm khởi hành là đầu tiên và trạm đến là cuối cùng
-        for (List<RouteStation> routeSegment : result) {
-            routeSegment.sort(Comparator.comparingInt(RouteStation::getOrderStation));
-        }
-
-        // Thêm bước đảm bảo trạm bắt đầu là "Bến xe Miền Đông" và trạm kết thúc là "Ngã 3 Phổ Quang"
-        for (List<RouteStation> routeSegment : result) {
-            // Nếu trạm bắt đầu không phải là "Bến xe Miền Đông", sửa lại thứ tự
-            if (routeSegment.get(0).getStationId().getId() != departureStationId) {
-                RouteStation firstStation = routeSegment.stream()
-                        .filter(rs -> rs.getStationId().getId() == departureStationId)
-                        .findFirst().orElse(null);
-                if (firstStation != null) {
-                    routeSegment.remove(firstStation);
-                    routeSegment.add(0, firstStation);
-                }
-            }
-
-            // Nếu trạm kết thúc không phải là "Ngã 3 Phổ Quang", sửa lại thứ tự
-            if (routeSegment.get(routeSegment.size() - 1).getStationId().getId() != arrivalStationId) {
-                RouteStation lastStation = routeSegment.stream()
-                        .filter(rs -> rs.getStationId().getId() == arrivalStationId)
-                        .findFirst().orElse(null);
-                if (lastStation != null) {
-                    routeSegment.remove(lastStation);
-                    routeSegment.add(lastStation);
-                }
-            }
-        }
-
-        return result;
+        // 6. Không tìm thấy tuyến phù hợp
+        return new ArrayList<>();
     }
 
+    @Override
+    public void save(AdminRouteStationDTO dto) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        Route route = s.get(Route.class, dto.getRouteId());
+        Station station = s.get(Station.class, dto.getStationId());
+
+        if (route == null || station == null) {
+            throw new IllegalArgumentException("Tuyến hoặc Trạm dừng không tồn tại");
+        }
+
+        RouteStation routeStation = AdminRouteStationMapper.toEntity(dto, route, station);
+        s.persist(routeStation);
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        Session session = this.factory.getObject().getCurrentSession();
+        MutationQuery query = session.createMutationQuery("DELETE FROM RouteStation u WHERE u.id IN :ids");
+        query.setParameter("ids", ids);
+        query.executeUpdate();
+    }
+
+    @Override
+    public List<AdminRouteStationDTO> getRouteStationsPaginated(int page, int size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        List<RouteStation> list = s.createQuery("FROM RouteStation rs", RouteStation.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+        return list.stream().map(AdminRouteStationMapper::toDTO).toList();
+    }
+
+    @Override
+    public long countRouteStations() {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("SELECT COUNT(rs.id) FROM RouteStation rs", Long.class).getSingleResult();
+    }
+
+    @Override
+    public void update(RouteStation r) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.merge(r);
+    }
+
+    @Override
+    public RouteStation findById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(RouteStation.class, id);
+    }
 }

@@ -4,6 +4,8 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminFavoriteRouteDTO;
+import com.quinhat.dto.AdminRouteDTO;
 import com.quinhat.pojo.Route;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
@@ -17,13 +19,21 @@ import java.util.Map;
 public interface RouteService {
 
     //Qui
-    public List<Route> getAllRoutes();
+    List<AdminRouteDTO> getAllRoutes();
 
-    void save(Route route);
+    void save(AdminRouteDTO dto);
 
-    Route getRouteById_Qui(int id);
+    void delete(List<Integer> ids);
+
+    List<AdminRouteDTO> getRoutesPaginated(int page, int size);
+
+    long countRoutes();
+
+    Route findById(int id);
+
+    AdminRouteDTO update(AdminRouteDTO dto);
+
     //Qui
-
     // Tìm các tuyến xe từ điểm đi đến điểm đến
     List<Route> getRoutesByStartAndEndPoints(Map<String, String> params);
 

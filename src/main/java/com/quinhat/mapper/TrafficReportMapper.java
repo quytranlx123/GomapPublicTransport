@@ -21,16 +21,17 @@ public class TrafficReportMapper {
         UserDTO userDTO = user != null ? new UserDTO(user, fields) : null;
 
         return new TrafficReportDTO(
-            report.getId(),
-            report.getTitle(),
-            report.getAddress(),
-            report.getLatitude(),
-            report.getLongitude(),
-            report.getImage(),
-            report.getDescription(),
-            report.getCreatedAt(),
-            report.getIsVerified(),
-            userDTO
+                report.getId(),
+                report.getTitle(),
+                report.getAddress(),
+                report.getLatitude(),
+                report.getLongitude(),
+                report.getImage(),
+                report.getDescription(),
+                report.getType(),
+                report.getCreatedAt(),
+                report.getIsVerified(),
+                userDTO
         );
     }
 }

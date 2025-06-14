@@ -4,6 +4,8 @@
  */
 package com.quinhat.repositories;
 
+import com.quinhat.dto.AdminStationDTO;
+import com.quinhat.dto.AdminTrafficReportDTO;
 import com.quinhat.pojo.TrafficReport;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +17,22 @@ import java.util.Map;
 public interface TrafficReportRepository {
 
 //    Qui
-    List<TrafficReport> getAllTrafficReports();
+    List<AdminTrafficReportDTO> getAllTrafficReports();
 
-    void save(TrafficReport trafficReport);
+    void save(AdminTrafficReportDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminTrafficReportDTO> getTrafficReportsPaginated(int page, int size);
+
+    long countTrafficReports();
+
+    void update(TrafficReport u);
+
+    TrafficReport findById(int id);
 
 //    Qui
-    List<TrafficReport> getTrafficReports(Map<String, String> params);
+    List<TrafficReport> getTrafficReports(Map<String, String> params, int page, int pageSize);
 
     TrafficReport createTrafficReport(TrafficReport p);
 
@@ -29,5 +41,11 @@ public interface TrafficReportRepository {
     TrafficReport getTrafficReportById(int id);
 
     void deleteTrafficReport(int id);
+
+    List<Object[]> countTrafficReportsByMonth(int month);
+
+    long countTrafficReportsByUserId(int userId, String type);
+    
+    List<TrafficReport> getVerifiedReports();
 
 }

@@ -4,10 +4,12 @@
  */
 package com.quinhat.controllers;
 
+import com.quinhat.dto.AdminFavoriteRouteDTO;
 import com.quinhat.dto.ApiResponse;
 import com.quinhat.dto.FavoriteRouteDTO;
 import com.quinhat.pojo.FavoriteRoute;
 import com.quinhat.services.FavoriteRouteService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,4 +73,5 @@ public class ApiFavoriteRouteController {
         ApiResponse<String> response = new ApiResponse<>(null, HttpStatus.OK.value(), "Xóa thành công");
         return ResponseEntity.ok(response);
     }
+
 }

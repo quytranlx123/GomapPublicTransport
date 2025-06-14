@@ -8,6 +8,7 @@ import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,7 +30,6 @@ import java.util.Set;
  *
  * @author ASUS
  */
-
 @Entity
 @Table(name = "vehicle")
 @NamedQueries({
@@ -94,11 +94,11 @@ public class Vehicle implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Column(name = "is_active")
-    private boolean isActive;
+    private Boolean isActive;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "vehicleId")
     private Set<Schedule> scheduleSet;
     @JoinColumn(name = "route_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     private Route routeId;
 
     public Vehicle() {
@@ -108,7 +108,7 @@ public class Vehicle implements Serializable {
         this.id = id;
     }
 
-    public Vehicle(Integer id, String licensePlate, String vehicleType, String driver, int capacity, float latitude, float longitude, String status, boolean isActive) {
+    public Vehicle(Integer id, String licensePlate, String vehicleType, String driver, int capacity, float latitude, float longitude, String status, Boolean isActive) {
         this.id = id;
         this.licensePlate = licensePlate;
         this.vehicleType = vehicleType;
@@ -200,11 +200,11 @@ public class Vehicle implements Serializable {
         this.status = status;
     }
 
-    public boolean getIsActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setIsActive(boolean isActive) {
+    public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
 
@@ -248,5 +248,5 @@ public class Vehicle implements Serializable {
     public String toString() {
         return "com.quinhat.pojo.Vehicle[ id=" + id + " ]";
     }
-    
+
 }

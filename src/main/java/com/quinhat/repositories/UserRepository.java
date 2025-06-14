@@ -4,6 +4,7 @@
  */
 package com.quinhat.repositories;
 
+import com.quinhat.dto.AdminUserDTO;
 import com.quinhat.pojo.User;
 import java.util.List;
 
@@ -11,14 +12,24 @@ import java.util.List;
  *
  * @author admin
  */
-
 public interface UserRepository {
+
     //Qui
     boolean deleteUser(int id);
 
-    List<User> getAllUsers();
-    
-    void save(User user);
+    void delete(List<Integer> ids);
+
+    List<AdminUserDTO> getAllUsers();
+
+    void save(User u);
+
+    List<AdminUserDTO> getUsersPaginated(int page, int size);
+
+    long countUsers();
+
+    User findById(int id);
+
+    void update(User u);
     //Quí
 
     User getUserByUsername(String username);
@@ -28,4 +39,8 @@ public interface UserRepository {
     boolean authenticate(String username, String password);
 
     User updateUser(User u);
+
+    User getUserByEmail(String email);
+
+    void updatePassword(User user, String newPassword);
 }

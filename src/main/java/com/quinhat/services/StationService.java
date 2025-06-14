@@ -4,6 +4,7 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminStationDTO;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
 import java.util.List;
@@ -16,15 +17,27 @@ import java.util.Map;
 public interface StationService {
 
     //Qui
-    public List<Station> getAllStations();
+    public List<AdminStationDTO> getAllStations();
 
-    void save(Station station);
+    void save(AdminStationDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminStationDTO> getStationsPaginated(int page, int size);
+
+    long countStations();
+
+    Station findById(int id);
+
+    AdminStationDTO update(AdminStationDTO dto);
+
     //Qui
-
     List<Station> findNearestStations(float latitude, float longitude, int limit);
 
     List<Station> getStations(Map<String, String> params);
 
-    List<RouteStation> getStationsByRouteId(int routeId);
+    List<RouteStation> getStationsByRouteId(int routeId, int page, int pageSize);
+
+    long countStationsByRouteId(int routeId);
 
 }

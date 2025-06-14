@@ -1,5 +1,6 @@
 package com.quinhat.repositories.impl;
 
+import com.quinhat.dto.AdminUserDTO;
 import com.quinhat.pojo.User;
 import com.quinhat.repositories.UserRepository;
 import org.hibernate.Session;
@@ -8,9 +9,12 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import com.quinhat.mapper.AdminUserMapper;
+import jakarta.persistence.NoResultException;
 
 import jakarta.persistence.Query;
 import java.util.List;
+import org.hibernate.query.MutationQuery;
 
 @Repository
 @Transactional
@@ -89,34 +93,86 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<AdminUserDTO> getAllUsers() {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.createQuery("FROM User", User.class).getResultList();
-    }
-
-    @Override
-    public void save(User user) {
-        Session s = this.factory.getObject().getCurrentSession();
-
-        // Nếu password chưa mã hoá, hoặc người dùng nhập lại mới thì mã hoá
-        if (user.getId() == null || isPlainPassword(user.getPassword())) {
-            String password = user.getPassword();
-            user.setEncryptedPassword(password);
-        }
-
-        if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
-            user.setAvatar(null); // Hoặc set URL mặc định
-        }
-
-        if (user.getId() == null) {
-            s.persist(user);
-        } else {
-            s.merge(user);
-        }
+        List<User> users = s.createQuery("FROM User u", User.class).getResultList();
+        return users.stream()
+                .map(AdminUserMapper::toDTO)
+                .toList();
     }
 
     private boolean isPlainPassword(String password) {
         return password != null && !password.startsWith("$2a$") && !password.startsWith("$2b$");
+    }
+
+    @Override
+    public void save(User u) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.persist(u);
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        Session session = this.factory.getObject().getCurrentSession();
+        MutationQuery query = session.createMutationQuery("DELETE FROM User u WHERE u.id IN :ids");
+        query.setParameter("ids", ids);
+        query.executeUpdate();
+    }
+
+    @Override
+    public List<AdminUserDTO> getUsersPaginated(int page, int size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        List<User> users = s.createQuery("FROM User u", User.class)
+                .setFirstResult(page * size) // offset
+                .setMaxResults(size) // limit
+                .getResultList();
+        return users.stream()
+                .map(AdminUserMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public long countUsers() {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("SELECT COUNT(u.id) FROM User u", Long.class)
+                .getSingleResult();
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        Session s = this.factory.getObject().getCurrentSession();
+        try {
+            return s.createQuery("FROM User u WHERE u.email = :email", User.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public void updatePassword(User user, String newPassword) {
+        Session s = this.factory.getObject().getCurrentSession();
+
+        user.setPassword(newPassword);
+
+        s.merge(user);
+    }
+
+    @Override
+    public void update(User u) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.merge(u);
+    }
+
+    @Override
+    public User findById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        User user = s.get(User.class, id);  // Lấy entity từ DB
+        if (user == null) {
+            return null;
+        }
+        return user;
     }
 
 }

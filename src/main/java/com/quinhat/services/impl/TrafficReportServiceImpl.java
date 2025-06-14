@@ -6,14 +6,17 @@ package com.quinhat.services.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.quinhat.dto.AdminTrafficReportDTO;
+import com.quinhat.mapper.AdminTrafficReportMapper;
 import com.quinhat.pojo.TrafficReport;
 import com.quinhat.pojo.User;
 import com.quinhat.repositories.TrafficReportRepository;
 import com.quinhat.repositories.UserRepository;
 import com.quinhat.services.TrafficReportService;
-import com.quinhat.services.UserService;
+import com.quinhat.utils.Common;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -33,29 +36,57 @@ public class TrafficReportServiceImpl implements TrafficReportService {
     private TrafficReportRepository trafficReportRepo;
     @Autowired
     private Cloudinary cloudinary;
+    @Autowired
+    private UserRepository userRepo;
 
     @Override
-    public List<TrafficReport> getTrafficReports(Map<String, String> params) {
-        return this.trafficReportRepo.getTrafficReports(params);
+    public List<TrafficReport> getTrafficReports(Map<String, String> params, int page, int pageSize) {
+        return this.trafficReportRepo.getTrafficReports(params, page, pageSize);
     }
 
     @Override
     public TrafficReport createTrafficReport(Map<String, String> params, MultipartFile image, User user) {
         TrafficReport report = new TrafficReport();
 
-        report.setTitle(params.get("title"));
-        report.setAddress(params.get("address"));
-        report.setDescription(params.get("description"));
-        report.setCreatedAt(new Date());
+        String title = params.get("title");
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Trường 'title' là bắt buộc.");
+        }
+        report.setTitle(title.trim());
 
-        try {
-            report.setLatitude(Float.parseFloat(params.get("latitude")));
-            report.setLongitude(Float.parseFloat(params.get("longitude")));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Latitude hoặc Longitude không hợp lệ");
+        String address = params.get("address");
+        if (address != null && !address.trim().isEmpty()) {
+            report.setAddress(address.trim());
         }
 
-        report.setUserId(user); // ✨ Đây là phần quan trọng
+        String description = params.get("description");
+        report.setDescription(description != null ? description.trim() : "");
+
+        String typeStr = params.get("type");
+        if (typeStr == null || typeStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("Trường 'type' là bắt buộc.");
+        }
+        try {
+            report.setType(TrafficReport.ReportType.valueOf(typeStr.trim()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Loại thông báo không hợp lệ: " + typeStr);
+        }
+
+        report.setCreatedAt(new Date());
+        report.setUserId(user);
+
+        // Xử lý latitude và longitude có thể không truyền vào
+        String latStr = params.get("latitude");
+        String lonStr = params.get("longitude");
+
+        if (latStr != null && !latStr.trim().isEmpty() && lonStr != null && !lonStr.trim().isEmpty()) {
+            try {
+                report.setLatitude(Float.parseFloat(latStr.trim()));
+                report.setLongitude(Float.parseFloat(lonStr.trim()));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Latitude hoặc Longitude không hợp lệ");
+            }
+        }
 
         if (image != null && !image.isEmpty()) {
             try {
@@ -97,6 +128,16 @@ public class TrafficReportServiceImpl implements TrafficReportService {
             report.setDescription(params.get("description"));
         }
 
+        if (params.containsKey("type")) {
+            try {
+                String typeStr = params.get("type").toLowerCase(); // chuyển về chữ thường
+                TrafficReport.ReportType reportType = TrafficReport.ReportType.valueOf(typeStr);
+                report.setType(reportType);
+            } catch (IllegalArgumentException e) {
+
+            }
+        }
+
         if (params.containsKey("latitude")) {
             report.setLatitude(Float.parseFloat(params.get("latitude")));
         }
@@ -117,13 +158,129 @@ public class TrafficReportServiceImpl implements TrafficReportService {
     }
 
     @Override
-    public List<TrafficReport> getAllTrafficReports() {
+    public List<AdminTrafficReportDTO> getAllTrafficReports() {
         return trafficReportRepo.getAllTrafficReports();
     }
 
     @Override
-    public void save(TrafficReport trafficReport) {
-        trafficReportRepo.save(trafficReport);
+    public void save(AdminTrafficReportDTO dto) {
+        trafficReportRepo.save(dto);
+    }
+
+    @Override
+    public Map<String, Long> countTrafficReportsByMonth(int month) {
+        List<Object[]> results = this.trafficReportRepo.countTrafficReportsByMonth(month);
+        Map<String, Long> resultMap = new HashMap<>();
+
+        // Mặc định là 0 nếu không có
+        resultMap.put("Đã xác minh", 0L);
+        resultMap.put("Chưa xác minh", 0L);
+
+        for (Object[] row : results) {
+            Boolean isVerified = (Boolean) row[0];
+            Long count = (Long) row[1];
+
+            if (isVerified != null && isVerified) {
+                resultMap.put("Đã xác minh", count);
+            } else {
+                resultMap.put("Chưa xác minh", count);
+            }
+        }
+
+        return resultMap;
+
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        trafficReportRepo.delete(ids);
+    }
+
+    @Override
+    public long countTrafficReportsByUserId(int userId, String type) {
+        return trafficReportRepo.countTrafficReportsByUserId(userId, type);
+    }
+
+    @Override
+    public List<AdminTrafficReportDTO> getTrafficReportsPaginated(int page, int size) {
+        return trafficReportRepo.getTrafficReportsPaginated(page, size);
+    }
+
+    @Override
+    public long countTrafficReports() {
+        return trafficReportRepo.countTrafficReports();
+    }
+
+    @Override
+    public TrafficReport findById(int id) {
+        return trafficReportRepo.findById(id);
+    }
+
+    @Override
+    public AdminTrafficReportDTO update(AdminTrafficReportDTO dto, MultipartFile newImageFile) {
+        TrafficReport existing = trafficReportRepo.findById(dto.getId());
+        if (existing == null) {
+            throw new IllegalArgumentException("Traffic Report not found");
+        }
+
+        // Cập nhật các trường từ dto
+        if (dto.getTitle() != null) {
+            existing.setTitle(dto.getTitle());
+        }
+        if (dto.getAddress() != null) {
+            existing.setAddress(dto.getAddress());
+        }
+        if (dto.getLatitude() != 0) {
+            existing.setLatitude(dto.getLatitude());
+        }
+        if (dto.getLongitude() != 0) {
+            existing.setLongitude(dto.getLongitude());
+        }
+        if (dto.getDescription() != null) {
+            existing.setDescription(dto.getDescription());
+        }
+        if (dto.getUserId() != null) {
+            User user = userRepo.findById(dto.getUserId());
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+            existing.setUserId(user);
+        }
+        if (dto.getType() != null) {
+            try {
+                existing.setType(TrafficReport.ReportType.valueOf(dto.getType().toLowerCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid type");
+            }
+        }
+        existing.setIsVerified(dto.isVerified());
+
+        // Xử lý upload ảnh nếu có
+        if (newImageFile != null && !newImageFile.isEmpty()) {
+            try {
+                // Xóa avatar cũ nếu có
+                if (existing.getImage() != null && !existing.getImage().isBlank()) {
+                    String publicId = Common.extractPublicIdFromUrl(existing.getImage());
+                    if (publicId != null) {
+                        cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                    }
+                }
+                // Upload avatar mới
+                Map uploadResult = cloudinary.uploader().upload(newImageFile.getBytes(), ObjectUtils.emptyMap());
+                String imageUrl = (String) uploadResult.get("url");
+                existing.setImage(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Upload ảnh báo cáo thất bại: " + e.getMessage());
+            }
+        }
+
+        trafficReportRepo.update(existing);
+        return AdminTrafficReportMapper.toDTO(existing);
+    }
+
+    @Override
+    public List<TrafficReport> getVerifiedReports() {
+        return this.trafficReportRepo.getVerifiedReports();
     }
 
 }

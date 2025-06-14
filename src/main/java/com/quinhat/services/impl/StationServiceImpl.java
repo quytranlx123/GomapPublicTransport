@@ -1,5 +1,7 @@
 package com.quinhat.services.impl;
 
+import com.quinhat.dto.AdminStationDTO;
+import com.quinhat.mapper.AdminStationMapper;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
 import com.quinhat.repositories.StationRepository;
@@ -16,13 +18,8 @@ public class StationServiceImpl implements StationService {
     private StationRepository stationRepo;
 
     @Override
-    public List<Station> getAllStations() {
+    public List<AdminStationDTO> getAllStations() {
         return stationRepo.getAllStations();
-    }
-
-    @Override
-    public void save(Station station) {
-        stationRepo.save(station);
     }
 
     @Override
@@ -36,7 +33,62 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
-    public List<RouteStation> getStationsByRouteId(int routeId) {
-        return stationRepo.getStationsByRouteId(routeId);
+    public List<RouteStation> getStationsByRouteId(int routeId, int page, int pageSize) {
+        return stationRepo.getStationsByRouteId(routeId, page, pageSize);
     }
+
+    @Override
+    public long countStationsByRouteId(int routeId) {
+        return stationRepo.countStationsByRouteId(routeId);
+    }
+
+    @Override
+    public void save(AdminStationDTO dto) {
+        stationRepo.save(dto);
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        stationRepo.delete(ids);
+    }
+
+    @Override
+    public List<AdminStationDTO> getStationsPaginated(int page, int size) {
+        return stationRepo.getStationsPaginated(page, size);
+    }
+
+    @Override
+    public long countStations() {
+        return stationRepo.countStations();
+    }
+
+    @Override
+    public Station findById(int id) {
+        return stationRepo.findById(id);
+    }
+
+    @Override
+    public AdminStationDTO update(AdminStationDTO dto) {
+        Station existing = stationRepo.findById(dto.getId());
+        if (existing == null) {
+            throw new IllegalArgumentException("Station not found");
+        }
+
+        if (dto.getName() != null) {
+            existing.setName(dto.getName());
+        }
+        if (dto.getLatitude() != 0) {
+            existing.setLatitude(dto.getLatitude());
+        }
+        if (dto.getLongitude() != 0) {
+            existing.setLongitude(dto.getLongitude());
+        }
+        if (dto.getAddress() != null) {
+            existing.setAddress(dto.getAddress());
+        }
+
+        stationRepo.update(existing);
+        return AdminStationMapper.toDTO(existing);
+    }
+
 }

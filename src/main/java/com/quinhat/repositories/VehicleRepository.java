@@ -4,6 +4,8 @@
  */
 package com.quinhat.repositories;
 
+import com.quinhat.dto.AdminUserDTO;
+import com.quinhat.dto.AdminVehicleDTO;
 import java.util.List;
 import com.quinhat.pojo.Vehicle;
 import com.quinhat.services.VehicleService;
@@ -16,11 +18,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 public interface VehicleRepository {
 
     //Qui
-    public List<Vehicle> getAllVehicles();
+    public List<AdminVehicleDTO> getAllVehicles();
 
-    void save(Vehicle vehicle);
+    void save(AdminVehicleDTO dto);
+
+    void delete(List<Integer> ids);
+
+    List<AdminVehicleDTO> getVehiclesPaginated(int page, int size);
+
+    long countVehicles();
+
+    Vehicle findById(int id);
+
+    void update(Vehicle u);
+
     //Qui
+    List<Vehicle> getVehiclesByRouteId(int routeId, int page, int pageSize);
 
-    List<Vehicle> getVehiclesByRouteId(int routeId);
+    long countVehiclesByRouteid(int routeId);
+
+    long countByIsActive(boolean isActive);
 
 }

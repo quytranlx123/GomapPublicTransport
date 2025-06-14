@@ -126,5 +126,5 @@ public class Schedule implements Serializable {
     public String toString() {
         return "com.quinhat.pojo.Schedule[ id=" + id + " ]";
     }
-    
+
 }

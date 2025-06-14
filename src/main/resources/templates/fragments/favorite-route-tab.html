@@ -1,0 +1,100 @@
+<div th:fragment="favorite-route-tab">
+    <div class="tab-pane" id="favorite-routes" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-star-fill"></i> Quản Lý Tuyến Ưa Thích
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedFavoriteRoutes" title="Xóa tuyến ưa thích đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllFavoriteRoutes" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>ID Tuyến</th>
+                        <th>ID Người dùng</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="favoriteRouteTableBody">
+                    <!--                    <tr th:each="fr : ${favoriteRoutes}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="favorite-route-checkbox" th:value="${fr.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${fr.id}"></td>
+                                            <td th:text="${fr.routeId}"></td>
+                                            <td th:text="${fr.userId != null ? fr.userId : 'N/A'}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(fr.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                                            th:attr="data-id=${fr.id}" title="Sửa tuyến yêu thích">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                                            onclick="deleteFavoriteRoute(this)"
+                                                            th:attr="data-id=${fr.id}" title="Xóa tuyến yêu thích">
+                                                        <i class="bi bi-trash me-1"></i> Xoá
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="favoriteRoutePagination" class="pagination justify-content-center mt-3"></ul>
+        </div>
+
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-plus-circle-fill"></i> Thêm Tuyến Ưa Thích</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeFavoriteRouteCount(-1)">-</button>
+                    <input type="number" id="favoriteRouteCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeFavoriteRouteCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateFavoriteRouteFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <form id="addFavoriteRouteForm" th:object="${adminFavoriteRouteForm}" 
+                      th:action="@{dashboard/favorite-routes/save}" method="post">
+                    <div id="favoriteRouteFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">💾 Lưu tất cả</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Template ẩn dòng form -->
+        <template id="favoriteRouteFormTemplate">
+            <div class="favorite-route-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Tuyến Ưa Thích #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Tuyến số</label>
+                        <select class="form-select route-select" required>
+                            <option value="" disabled selected>Chọn tuyến số</option>
+                            <option th:each="route : ${routes}" th:value="${route.id}" th:text="${route.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Người dùng</label>
+                        <select class="form-select user-select" required>
+                            <option value="" disabled selected>Chọn người dùng</option>
+                            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.fullName}"></option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-close mt-3" aria-label="Xóa dòng" onclick="this.closest('.favorite-route-form').remove()"></button>
+            </div>
+        </template>
+    </div>
+</div>

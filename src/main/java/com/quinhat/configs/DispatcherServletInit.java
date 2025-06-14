@@ -30,7 +30,8 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
             HibernateConfigs.class,
             SpringSecurityConfigs.class,
             WebSocketConfig.class,
-            FirebaseInitializer.class
+            FirebaseInitializer.class,
+            MailConfig.class
         };
     }
 
@@ -48,7 +49,8 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
 
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
-        String location = "/";
+//        String location = "/";
+        String location = System.getProperty("java.io.tmpdir");
         long maxFileSize = 5242880; // 5MB
         long maxRequestSize = 20971520; // 20MB
         int fileSizeThreshold = 0;

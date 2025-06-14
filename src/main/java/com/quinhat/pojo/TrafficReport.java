@@ -1,33 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.quinhat.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
- * @author ASUS
+ * Entity đại diện cho báo cáo giao thông
  */
 @Entity
 @Table(name = "traffic_report")
@@ -40,52 +21,73 @@ import org.springframework.web.multipart.MultipartFile;
     @NamedQuery(name = "TrafficReport.findByImage", query = "SELECT t FROM TrafficReport t WHERE t.image = :image"),
     @NamedQuery(name = "TrafficReport.findByDescription", query = "SELECT t FROM TrafficReport t WHERE t.description = :description"),
     @NamedQuery(name = "TrafficReport.findByCreatedAt", query = "SELECT t FROM TrafficReport t WHERE t.createdAt = :createdAt"),
-    @NamedQuery(name = "TrafficReport.findByIsVerified", query = "SELECT t FROM TrafficReport t WHERE t.isVerified = :isVerified")})
+    @NamedQuery(name = "TrafficReport.findByIsVerified", query = "SELECT t FROM TrafficReport t WHERE t.isVerified = :isVerified")
+})
 public class TrafficReport implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // ==== ID ====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
+
+    // ==== Title ====
+    @NotNull
     @Size(max = 255)
-    @NotNull
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "address")
+
+    // ==== Address ====
+    @Size(max = 255)
+    @Column(name = "address", nullable = true)
     private String address;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "latitude")
+
+    // ==== Coordinates ====
+    @Column(name = "latitude", nullable = true)
     private float latitude;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "longitude")
+
+    @Column(name = "longitude", nullable = true)
     private float longitude;
+
+    // ==== Image & Description ====
     @Size(max = 255)
     @Column(name = "image")
     private String image;
+
     @Size(max = 255)
     @Column(name = "description")
     private String description;
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "is_verified")
-    private boolean isVerified;
-    @JsonIgnore
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true) //chấp nhận null để xoá user không bị xoá lan truyền
-    @ManyToOne
-    private User userId;
-//    @Transient
-//    private MultipartFile file;
 
+    // ==== Date ====
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private Date createdAt;
+
+    // ==== Verification ====
+    @NotNull
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified;
+
+    // ==== User (nullable) ====
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
+    private User userId;
+
+    // ==== Notification Type (Enum) ====
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private ReportType type;
+
+    public enum ReportType {
+        report,
+        rating
+    }
+
+    // ==== Constructors ====
     public TrafficReport() {
     }
 
@@ -101,6 +103,7 @@ public class TrafficReport implements Serializable {
         this.isVerified = isVerified;
     }
 
+    // ==== Getters & Setters ====
     public Integer getId() {
         return id;
     }
@@ -181,42 +184,45 @@ public class TrafficReport implements Serializable {
         this.userId = userId;
     }
 
+    public ReportType getType() {
+        return type;
+    }
+
+    public void setType(ReportType type) {
+        this.type = type;
+    }
+
+    // ==== Hashcode/Equals ====
     @Override
     public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+        return (id != null ? id.hashCode() : 0);
     }
 
     @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof TrafficReport)) {
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TrafficReport)) {
             return false;
         }
-        TrafficReport other = (TrafficReport) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        TrafficReport other = (TrafficReport) obj;
+        return this.id != null && this.id.equals(other.getId());
     }
 
     @Override
     public String toString() {
-        return "com.quinhat.pojo.TrafficReport[ id=" + id + " ]";
+        return "TrafficReport[id=" + id + "]";
     }
-//
-//    /**
-//     * @return the file
-//     */
-//    public MultipartFile getFile() {
-//        return file;
-//    }
-//
-//    /**
-//     * @param file the file to set
-//     */
-//    public void setFile(MultipartFile file) {
-//        this.file = file;
-//    }
+
+    // ==== Nếu cần upload file tạm thời (không lưu DB) ====
+    /*
+    @Transient
+    private MultipartFile file;
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
+     */
 }

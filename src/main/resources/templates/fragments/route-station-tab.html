@@ -1,0 +1,116 @@
+<div th:fragment="route-station-tab">
+    <div class="tab-pane" id="route-stations" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-geo-alt-fill"></i> Quản Lý Tuyến - Trạm Dừng
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedRouteStations" title="Xóa trạm tuyến đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchRouteStationButton" title="Tìm kiếm trạm tuyến">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllRouteStations" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Thứ Tự Trạm</th>
+                        <th>Khoảng Cách (km)</th>
+                        <th>Thời Gian (phút)</th>
+                        <th>ID Tuyến Đường</th>
+                        <th>ID Trạm</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="routeStationTableBody">
+<!--                    <tr th:each="rs : ${routeStations}">
+                        <td class="no-edit">
+                            <input type="checkbox" class="route-station-checkbox" th:value="${rs.id}">
+                        </td>
+                        <td class="no-edit" th:text="${rs.id}"></td>
+                        <td th:text="${rs.orderStation}"></td>
+                        <td th:text="${rs.distance}"></td>
+                        <td th:text="${rs.duration}"></td>
+                        <td th:text="${rs.routeId != null ? rs.routeId : 'N/A'}"></td>
+                        <td th:text="${rs.stationId != null ? rs.stationId : 'N/A'}"></td>
+                        <td class="no-edit text-center">
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                        th:attr="data-id=${rs.id}" title="Sửa trạm tuyến">
+                                    <i class="bi bi-pencil-square me-1"></i> Sửa
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                        onclick="deleteRouteStation(this)"
+                                        th:attr="data-id=${rs.id}" title="Xóa trạm tuyến">
+                                    <i class="bi bi-trash me-1"></i> Xóa
+                                </button>
+                            </div>
+                        </td>
+                    </tr>-->
+                </tbody>
+            </table>
+            <ul id="routeStationPagination" class="pagination justify-content-center mt-3"></ul>
+
+        </div>
+
+        <!-- Card thêm trạm tuyến mới với số lượng -->
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-plus-circle-fill"></i> Thêm Điểm Dừng Mới</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeRouteStationCount(-1)">-</button>
+                    <input type="number" id="routeStationCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeRouteStationCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateRouteStationFormsFromInput()">Xác Nhận</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="addRouteStationForm" th:action="@{dashboard/route-stations/save}" method="post">
+                    <div id="routeStationFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Trạm Tuyến Đường</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Template form thêm trạm tuyến -->
+        <template id="routeStationFormTemplate">
+            <div class="route-station-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Trạm Tuyến #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="orderStation" class="form-label">Thứ Tự</label>
+                        <input type="number" class="form-control" name="adminRouteStationDTOs[#index#].orderStation" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="distance" class="form-label">Khoảng Cách (km)</label>
+                        <input type="number" step="0.1" class="form-control" name="adminRouteStationDTOs[#index#].distance" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="duration" class="form-label">Thời Gian (phút)</label>
+                        <input type="number" class="form-control" name="adminRouteStationDTOs[#index#].duration" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="routeId" class="form-label">Tuyến Đường</label>
+                        <select class="form-select" name="adminRouteStationDTOs[#index#].routeId" required>
+                            <option th:each="route : ${routes}" th:value="${route.id}" th:text="${route.name}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="stationId" class="form-label">Trạm</label>
+                        <select class="form-select" name="adminRouteStationDTOs[#index#].stationId" required>
+                            <option th:each="station : ${stations}" th:value="${station.id}" th:text="${station.name}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

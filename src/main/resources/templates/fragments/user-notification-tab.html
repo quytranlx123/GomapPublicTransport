@@ -1,0 +1,109 @@
+<div th:fragment="user-notification-tab">
+    <div class="tab-pane" id="user-notifications" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-person-badge"></i> Bảng Người Dùng - Thông Báo
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedUserNotifications" title="Xóa thông báo người dùng đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchUserNotificationButton" title="Tìm kiếm thông báo người dùng">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllUserNotifications" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Thời gian gửi</th>
+                        <th>Đã đọc</th>
+                        <th>ID Thông báo</th>
+                        <th>ID Người dùng</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="userNotificationTableBody">
+                    <!--                    <tr th:each="un : ${userNotifications}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="user-notification-checkbox" th:value="${un.id}">
+                                            </td>
+                                            <td class="no-edit" th:text="${un.id}"></td>
+                                            <td th:text="${#dates.format(un.sendAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td th:text="${un.isRead} ? 'Read' : 'Unread'"></td>
+                                            <td th:text="${un.notificationId}"></td>
+                                            <td th:text="${un.userId != null ? un.userId : 'N/A'}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                                            th:attr="data-id=${un.id}" title="Sửa thông báo người dùng">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                                            onclick="deleteUserNotification(this)"
+                                                            th:attr="data-id=${un.id}" title="Xóa thông báo người dùng">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="userNotificationPagination" class="pagination justify-content-center mt-3"></ul>
+        </div>
+
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-person-plus-fill"></i> Thêm Thông Báo Đến Người Dùng</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeUserNotificationCount(-1)">-</button>
+                    <input type="number" id="userNotificationCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeUserNotificationCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateUserNotificationFormsFromInput()">Xác Nhận</button>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <form id="addUserNotificationForm" th:action="@{dashboard/user-notifications/save}" method="post" enctype="multipart/form-data">
+                    <div id="userNotificationFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Thông Báo Người Dùng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <template id="userNotificationFormTemplate">
+            <div class="user-notification-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Thông Báo Người Dùng #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Thông báo</label>
+                        <select class="form-control notification-id-select" name="notificationId">
+                            <option value="" selected>Không chọn</option>
+                            <option th:each="entry : ${listNotificationNames.entrySet()}"
+                                    th:value="${entry.key}"
+                                    th:text="${entry.value}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Người dùng (Chọn một hoặc nhiều)</label>
+                        <select class="form-control user-ids-select" name="userIds" multiple>
+                            <option th:each="entry : ${listUserFullnames.entrySet()}"
+                                    th:value="${entry.key}"
+                                    th:text="${entry.value}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</div>
+

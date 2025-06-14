@@ -4,14 +4,15 @@
  */
 package com.quinhat.services;
 
-import java.util.Map;
+import com.quinhat.dto.AdminRouteFavoriteCountDTO;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author tranngocqui
  */
-public interface DashboardService {
+public interface StatisticsService {
 
-    Map<String, Object> getAllData();
-
+    public List<AdminRouteFavoriteCountDTO> getTop5FavoriteRoutes();
 }

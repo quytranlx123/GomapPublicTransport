@@ -1,8 +1,14 @@
 package com.quinhat.repositories.impl;
 
+import com.quinhat.dto.AdminRouteDTO;
+import com.quinhat.mapper.AdminFavoriteRouteMapper;
+import com.quinhat.mapper.AdminRouteMapper;
+import com.quinhat.pojo.FavoriteRoute;
+import com.quinhat.pojo.Notification;
 import com.quinhat.pojo.Route;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
+import com.quinhat.pojo.User;
 import com.quinhat.repositories.RouteRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -19,6 +25,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
+import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -35,19 +42,12 @@ public class RouteRepositoryImpl implements RouteRepository {
     private static final int PAGE_SIZE = 8;
 
     @Override
-    public List<Route> getAllRoutes() {
+    public List<AdminRouteDTO> getAllRoutes() {
         Session s = this.factory.getObject().getCurrentSession();
-        return s.createQuery("FROM Route", Route.class).getResultList();
-    }
-
-    @Override
-    public void save(Route route) {
-        Session s = this.factory.getObject().getCurrentSession();
-        if (route.getId() == null) {
-            s.persist(route);
-        } else {
-            s.merge(route);
-        }
+        List<Route> routes = s.createQuery("FROM Route r", Route.class).getResultList();
+        return routes.stream()
+                .map(AdminRouteMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -307,6 +307,54 @@ public class RouteRepositoryImpl implements RouteRepository {
         }
 
         return Collections.emptyList(); // Không tìm thấy đường đi
+    }
+
+    @Override
+    public void save(AdminRouteDTO dto) {
+        Session session = this.factory.getObject().getCurrentSession();
+        Route route = AdminRouteMapper.toEntity(dto);
+
+        if (route.getCreatedAt() == null) {
+            route.setCreatedAt(new java.util.Date());
+        }
+
+        session.persist(route);
+    }
+
+    @Override
+    public void delete(List<Integer> ids) {
+        Session session = this.factory.getObject().getCurrentSession();
+        MutationQuery query = session.createMutationQuery("DELETE FROM Route u WHERE u.id IN :ids");
+        query.setParameter("ids", ids);
+        query.executeUpdate();
+    }
+
+    @Override
+    public List<AdminRouteDTO> getRoutesPaginated(int page, int size) {
+        Session s = this.factory.getObject().getCurrentSession();
+        List<Route> list = s.createQuery("FROM Route r", Route.class)
+                .setFirstResult(page * size)
+                .setMaxResults(size)
+                .getResultList();
+        return list.stream().map(AdminRouteMapper::toDTO).toList();
+    }
+
+    @Override
+    public long countRoutes() {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.createQuery("SELECT COUNT(r.id) FROM Route r", Long.class).getSingleResult();
+    }
+
+    @Override
+    public void update(Route r) {
+        Session s = this.factory.getObject().getCurrentSession();
+        s.merge(r);
+    }
+
+    @Override
+    public Route findById(int id) {
+        Session s = this.factory.getObject().getCurrentSession();
+        return s.get(Route.class, id);
     }
 
 //    @Override

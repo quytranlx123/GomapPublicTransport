@@ -1,5 +1,6 @@
 package com.quinhat.repositories;
 
+import com.quinhat.dto.AdminRouteDTO;
 import com.quinhat.pojo.Route;
 import com.quinhat.pojo.RouteStation;
 import com.quinhat.pojo.Station;
@@ -9,14 +10,23 @@ import java.util.Map;
 public interface RouteRepository {
 
     //Qui
-    List<Route> getAllRoutes();
+    List<AdminRouteDTO> getAllRoutes();
 
-    void save(Route route);
+    void save(AdminRouteDTO dto);
+
+    void delete(List<Integer> ids);
 
     Route getRouteById_Qui(int id);
+
+    List<AdminRouteDTO> getRoutesPaginated(int page, int size);
+
+    long countRoutes();
+
+    void update(Route r);
+
+    Route findById(int id);
+
     //Qui
-    
-    
     // Tìm các tuyến xe từ điểm đi đến điểm đến
     List<Route> getRoutesByStartAndEndPoints(Map<String, String> params);
 

@@ -1,0 +1,148 @@
+<div th:fragment="traffic-report-tab">
+    <div class="tab-pane" id="traffic-reports" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-flag-fill"></i> Quản Lý Báo Cáo Giao Thông
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedTrafficReports" title="Xóa báo cáo đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchTrafficReportButton" title="Tìm kiếm báo cáo giao thông">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllTrafficReports" title="Chọn tất cả"></th>
+                        <th>Mã số</th>
+                        <th>Tiêu đề</th>
+                        <th>Địa điểm</th>
+                        <th>Vĩ độ</th>
+                        <th>Kinh độ</th>
+                        <th>Hình ảnh</th>
+                        <th>Mô tả chi tiết</th>
+                        <th>Ngày tạo</th>
+                        <th>Đã xác thực</th>
+                        <th>ID người dùng</th>
+                        <th>Loại</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="trafficReportTableBody">
+                    <!--                    <tr th:each="tr : ${trafficReports}">
+                                            <td class="no-edit">
+                                                <input type="checkbox" class="traffic-report-checkbox" th:value="${tr.id}">
+                                            </td>                                    
+                                            <td class="no-edit" th:text="${tr.id}"></td>
+                                            <td th:text="${tr.title}"></td>
+                                            <td th:text="${tr.address}"></td>
+                                            <td th:text="${tr.latitude}"></td>
+                                            <td th:text="${tr.longitude}"></td>
+                                            <td>
+                                                <img th:src="@{${tr.image}}" alt="Hình ảnh giao thông" width="80" height="60" class="rounded">
+                                            </td>
+                                            <td th:text="${tr.description}"></td>
+                                            <td class="no-edit" th:text="${#dates.format(tr.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                            <td th:text="${tr.isVerified} ? 'Đã xác thực' : 'Chưa xác thực'"></td>
+                                            <td th:text="${tr.userId != null ? tr.userId : 'Không có'}"></td>
+                                            <td class="no-edit text-center">
+                                                <div class="d-flex justify-content-center gap-3">
+                                                    <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                                            th:attr="data-id=${tr.id}" title="Sửa báo cáo giao thông">
+                                                        <i class="bi bi-pencil-square me-1"></i> Sửa
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                                            onclick="deleteTrafficReport(this)"
+                                                            th:attr="data-id=${tr.id}" title="Xóa báo cáo giao thông">
+                                                        <i class="bi bi-trash me-1"></i> Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>-->
+                </tbody>
+            </table>
+            <ul id="trafficReportPagination" class="pagination justify-content-center mt-3"></ul>
+        </div>
+
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-plus-circle-fill"></i> Thêm Báo Cáo Giao Thông</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeTrafficReportCount(-1)">-</button>
+                    <input type="number" id="trafficReportCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeTrafficReportCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateTrafficReportFormsFromInput()">Xác Nhận</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="addTrafficReportForm" th:action="@{dashboard/traffic-reports/save}" method="post" enctype="multipart/form-data">
+                    <div id="trafficReportFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Báo Cáo Giao Thông</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <template id="trafficReportFormTemplate">
+            <div class="traffic-report-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Báo Cáo Giao Thông #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="title" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="address" class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" name="address" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="latitude" class="form-label">Vĩ độ</label>
+                        <input type="number" step="0.000001" class="form-control" name="latitude" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="longitude" class="form-label">Kinh độ</label>
+                        <input type="number" step="0.000001" class="form-control" name="longitude" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="imageFile" class="form-label">Tải lên hình ảnh</label>
+                        <input type="file" class="form-control" name="imageFile" accept="image/*">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <input type="text" class="form-control" name="description">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="isVerified" class="form-label">Đã xác thực</label>
+                        <select class="form-select" name="isVerified" required>
+                            <option value="true">Đã xác thực</option>
+                            <option value="false" selected>Chưa xác thực</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="userId" class="form-label">Người dùng (Tuỳ chọn)</label>
+                        <select class="form-control" name="userId">
+                            <option value="" selected>Không chọn</option>
+                            <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.username}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="type" class="form-label">Loại</label>
+                        <select class="form-control" name="type" required>
+                            <option value="" disabled selected>-- Chọn loại --</option>
+                            <option th:each="type : ${notificationTypes}" 
+                                    th:value="${type}" 
+                                    th:text="${type}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

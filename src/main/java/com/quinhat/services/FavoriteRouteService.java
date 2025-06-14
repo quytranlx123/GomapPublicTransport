@@ -4,8 +4,12 @@
  */
 package com.quinhat.services;
 
+import com.quinhat.dto.AdminFavoriteRouteDTO;
+import com.quinhat.dto.FavoriteRouteDTO;
+import com.quinhat.dto.FavoriteRouteStatDTO;
 import com.quinhat.pojo.FavoriteRoute;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -13,13 +17,32 @@ import java.util.List;
  */
 public interface FavoriteRouteService {
 
-    public List<FavoriteRoute> getAllFavoriteRoutes();
+    //Qui
+    List<AdminFavoriteRouteDTO> getAllFavoriteRoutes();
 
-    void save(FavoriteRoute favoriteRoute);
+    void save(AdminFavoriteRouteDTO dto);
 
-    List<FavoriteRoute> getFavoriteRoutesByUserId(Integer userId);
+    void delete(List<Integer> ids);
 
-    void create(Integer userId, Integer routeId);
+    List<AdminFavoriteRouteDTO> getFavoriteRoutesPaginated(int page, int size);
 
-    void delete(Integer favoriteRouteId);
+    long countFavoriteRoutes();
+
+    FavoriteRoute findById(int id);
+
+    AdminFavoriteRouteDTO update(AdminFavoriteRouteDTO dto);
+
+    //Qui
+    List<FavoriteRoute> getFavoriteRoutesByUserId(Integer userId
+    );
+
+    void create(Integer userId, Integer routeId
+    );
+
+    void delete(Integer favoriteRouteId
+    );
+
+    List<Object[]> getTop5FavoriteRoutes();
+//    List<FavoriteRouteStatDTO> getTop5FavoriteRoutes();
+
 }

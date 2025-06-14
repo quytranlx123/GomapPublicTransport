@@ -1,0 +1,104 @@
+<div th:fragment="schedule-tab">
+    <div class="tab-pane" id="schedules" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0">
+                <i class="bi bi-clock-fill"></i> Quản Lý Lịch Trình
+            </h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" id="deleteSelectedSchedules" title="Xóa lịch trình đã chọn">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="searchScheduleButton" title="Tìm kiếm lịch trình">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-striped table-bordered table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAllSchedules" title="Chọn tất cả"></th>
+                        <th>ID</th>
+                        <th>Giờ Khởi Hành</th>
+                        <th>Giờ Đến</th>
+                        <th>ID Phương Tiện</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+<!--                    <tr th:each="s : ${schedules}">
+                        <td class="no-edit">
+                            <input type="checkbox" class="schedule-checkbox" th:value="${s.id}">
+                        </td>
+                        <td class="no-edit" th:text="${s.id}"></td>
+                        <td th:text="${#dates.format(s.departureTime, 'HH:mm:ss')}"></td>
+                        <td th:text="${#dates.format(s.arrivalTime, 'HH:mm:ss')}"></td>
+                        <td th:text="${s.vehicleId != null ? s.vehicleName : 'N/A'}"></td>
+                        <td class="no-edit text-center">
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="button" class="btn btn-sm rounded-pill edit-btn"
+                                        th:attr="data-id=${s.id}" title="Sửa lịch trình">
+                                    <i class="bi bi-pencil-square me-1"></i> Sửa
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill delete-btn"
+                                        onclick="deleteSchedule(this)"
+                                        th:attr="data-id=${s.id}" title="Xóa lịch trình">
+                                    <i class="bi bi-trash me-1"></i> Xóa
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>-->
+                </tbody>
+            </table>
+            <ul id="schedulePagination" class="pagination justify-content-center mt-3"></ul>
+
+        </div>
+
+        <!-- Card thêm lịch trình -->
+        <div class="card shadow rounded">
+            <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-plus-circle-fill"></i> Thêm Lịch Trình Mới</div>
+                <div class="compact-input-group">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeScheduleCount(-1)">-</button>
+                    <input type="number" id="scheduleCount" class="form-control form-control-sm compact-input text-center" min="1" value="1">
+                    <button class="btn btn-light btn-sm compact-btn" type="button" onclick="changeScheduleCount(1)">+</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="generateScheduleFormsFromInput()">Xác Nhận</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="addScheduleForm" th:action="@{dashboard/schedules/save}" method="post">
+                    <div id="scheduleFormsContainer"></div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success">Thêm Lịch Trình</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Template form thêm lịch trình -->
+        <template id="scheduleFormTemplate">
+            <div class="schedule-form mb-4 border p-3 rounded">
+                <h5 class="text-success mb-3 fw-bold">Lịch Trình #<span class="form-index"></span></h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="departureTime" class="form-label">Giờ Khởi Hành</label>
+                        <input type="time" class="form-control" name="schedules[#index#].departureTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="arrivalTime" class="form-label">Giờ Đến</label>
+                        <input type="time" class="form-control" name="schedules[#index#].arrivalTime" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="vehicleId" class="form-label">Phương Tiện</label>
+                        <select class="form-select" name="schedules[#index#].vehicleId" required>
+                            <option value="" disabled selected>Chọn phương tiện</option>
+                            <option th:each="vehicle : ${vehicles}" th:value="${vehicle.id}" th:text="${vehicle.licensePlate}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

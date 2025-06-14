@@ -2,7 +2,6 @@ package com.quinhat.dto;
 
 import com.quinhat.pojo.TrafficReport;
 import java.util.Date;
-import java.util.Set;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -21,13 +20,14 @@ public class TrafficReportDTO {
     private float longitude;
     private String image;
     private String description;
+    private TrafficReport.ReportType type;
     private Date createdAt;
     private boolean isVerified;
     private UserDTO user;
 
     // Constructor
     public TrafficReportDTO(Integer id, String title, String address, float latitude, float longitude, String image,
-            String description, Date createdAt, boolean isVerified, UserDTO user) {
+            String description, TrafficReport.ReportType type, Date createdAt, boolean isVerified, UserDTO user) {
         this.id = id;
         this.title = title;
         this.address = address;
@@ -35,6 +35,7 @@ public class TrafficReportDTO {
         this.longitude = longitude;
         this.image = image;
         this.description = description;
+        this.type = type;
         this.createdAt = createdAt;
         this.isVerified = isVerified;
         this.user = user;
@@ -49,6 +50,7 @@ public class TrafficReportDTO {
                 trafficReport.getLongitude(),
                 trafficReport.getImage(),
                 trafficReport.getDescription(),
+                trafficReport.getType(),
                 trafficReport.getCreatedAt(),
                 trafficReport.getIsVerified(),
                 null
@@ -134,6 +136,20 @@ public class TrafficReportDTO {
 
     public void setUser(UserDTO user) {
         this.user = user;
+    }
+
+    /**
+     * @return the type
+     */
+    public TrafficReport.ReportType getType() {
+        return type;
+    }
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(TrafficReport.ReportType type) {
+        this.type = type;
     }
 
 }
